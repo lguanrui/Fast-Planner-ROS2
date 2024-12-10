@@ -1,40 +1,38 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.8)
 project(bspline)
+cmake_policy(SET CMP0069 NEW)
 
-set(CMAKE_CXX_STANDARD 14)
+# We need c++14 for ROS2, thus just require it for everybody
+# NOTE: To future self, hope this isn't an issue...
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") #C++ compile option
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
+# Enable debug flags (use if you want to debug in gdb)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -Wall -Wuninitialized -fno-omit-frame-pointer")
+
+find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.7 REQUIRED)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  visualization_msgs
-  plan_env
-  cv_bridge
-)
-
-catkin_package(
- INCLUDE_DIRS include
- LIBRARIES bspline
- CATKIN_DEPENDS
-#  DEPENDS system_lib
-)
-
-include_directories( 
-    SYSTEM 
-    include 
-    ${catkin_INCLUDE_DIRS}
-    ${Eigen3_INCLUDE_DIRS} 
-    ${PCL_INCLUDE_DIRS}
-)
-
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3 -Wall")
-
-add_library( bspline 
-    src/non_uniform_bspline.cpp 
+set(dependencies
+    Eigen3
     )
-target_link_libraries( bspline
-    ${catkin_LIBRARIES} 
-    )  
+include_directories(include ${EIGEN3_INCLUDE_DIR})
+
+add_library(bspline SHARED src/non_uniform_bspline.cpp)
+ament_target_dependencies(bspline ${dependencies})
+ament_export_targets(bspline HAS_LIBRARY_TARGET)
+
+install(
+  TARGETS bspline 
+  EXPORT bspline 
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  INCLUDES DESTINATION include
+)
+
+ament_package()

@@ -24,7 +24,6 @@
 
 
 #include "bspline/non_uniform_bspline.h"
-#include <ros/ros.h>
 
 namespace fast_planner {
 
@@ -212,7 +211,9 @@ double NonUniformBspline::checkRatio() {
     }
   }
   double ratio = max(max_vel / limit_vel_, sqrt(fabs(max_acc) / limit_acc_));
-  ROS_ERROR_COND(ratio > 2.0, "max vel: %lf, max acc: %lf.", max_vel, max_acc);
+  if (ratio > 2.0) {
+    std::cout << "max vel: " << max_vel << ", max acc: " << max_acc << std::endl;
+  }
 
   return ratio;
 }
