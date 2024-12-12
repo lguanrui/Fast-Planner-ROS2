@@ -255,8 +255,6 @@ void SDFMap::updateESDF3d() {
         }
       }
 
-  ros::Time t1, t2;
-
   for (int x = min_esdf[0]; x <= max_esdf[0]; x++) {
     for (int y = min_esdf[1]; y <= max_esdf[1]; y++) {
       fillESDF(
@@ -430,8 +428,6 @@ void SDFMap::projectDepthImage() {
 void SDFMap::raycastProcess() {
   // if (md_.proj_points_.size() == 0)
   if (md_.proj_points_cnt == 0) return;
-
-  ros::Time t1, t2;
 
   md_.raycast_num_ += 1;
 
