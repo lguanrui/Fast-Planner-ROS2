@@ -32,7 +32,7 @@ FastPlannerManager::FastPlannerManager() {}
 
 FastPlannerManager::~FastPlannerManager() { std::cout << "des manager" << std::endl; }
 
-void FastPlannerManager::initPlanModules(PlanParameters& pp, bool use_geometric_path,
+void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& mp, bool use_geometric_path,
                                         bool use_kinodynamic_path, bool use_topo_path,
                                         bool use_optimization) {
   /* read algorithm parameters */
@@ -41,11 +41,11 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, bool use_geometric_
 
   local_data_.traj_id_ = 0;
   sdf_map_.reset(new SDFMap);
-  sdf_map_->initMap(nh);
+  sdf_map_->initMap(mp);
   edt_environment_.reset(new EDTEnvironment);
   edt_environment_->setMap(sdf_map_);
 
-  if (use_geometric_path) {
+  /*if (use_geometric_path) {
     geo_path_finder_.reset(new Astar);
     geo_path_finder_->setParam(nh);
     geo_path_finder_->setEnvironment(edt_environment_);
@@ -72,7 +72,7 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, bool use_geometric_
     topo_prm_.reset(new TopologyPRM);
     topo_prm_->setEnvironment(edt_environment_);
     topo_prm_->init(nh);
-  }
+  }*/
 }
 
 void FastPlannerManager::setGlobalWaypoints(vector<Eigen::Vector3d>& waypoints) {
@@ -81,7 +81,8 @@ void FastPlannerManager::setGlobalWaypoints(vector<Eigen::Vector3d>& waypoints) 
 
 bool FastPlannerManager::checkTrajCollision(double& distance) {
 
-  double t_now = (ros::Time::now() - local_data_.start_time_).toSec();
+  // double t_now = (ros::Time::now() - local_data_.start_time_).toSec();
+  double t_now = (rclcpp::Clock().now() - local_data_.start_time_).seconds();
 
   double tm, tmp;
   local_data_.position_traj_.getTimeSpan(tm, tmp);
@@ -124,10 +125,11 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
     cout << "Close goal" << endl;
     return false;
   }
+  // ros::Time t1;
+  rclcpp::Time t1;
 
-  ros::Time t1, t2;
-
-  local_data_.start_time_ = ros::Time::now();
+  // local_data_.start_time_ = ros::Time::now();
+  local_data_.start_time_ = rclcpp::Clock().now();
   double t_search = 0.0, t_opt = 0.0, t_adjust = 0.0;
 
   Eigen::Vector3d init_pos = start_pt;
@@ -136,7 +138,8 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 
   // kinodynamic path searching
 
-  t1 = ros::Time::now();
+  // t1 = ros::Time::now();
+  t1 = rclcpp::Clock().now();
 
   kino_path_finder_->reset();
 
@@ -162,7 +165,8 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 
   plan_data_.kino_path_ = kino_path_finder_->getKinoTraj(0.01);
 
-  t_search = (ros::Time::now() - t1).toSec();
+  // t_search = (ros::Time::now() - t1).toSec();
+  t_search = (rclcpp::Clock().now() - t1).seconds();
 
   // parameterize the path to bspline
 
@@ -176,7 +180,8 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 
   // bspline trajectory optimization
 
-  t1 = ros::Time::now();
+  // t1 = ros::Time::now();
+  t1 = rclcpp::Clock().now();
 
   int cost_function = BsplineOptimizer::NORMAL_PHASE;
 
@@ -186,11 +191,13 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 
   ctrl_pts = bspline_optimizers_[0]->BsplineOptimizeTraj(ctrl_pts, ts, cost_function, 1, 1);
 
-  t_opt = (ros::Time::now() - t1).toSec();
+  // t_opt = (ros::Time::now() - t1).toSec();
+  t_opt = (rclcpp::Clock().now() - t1).seconds();
 
   // iterative time adjustment
 
-  t1                    = ros::Time::now();
+  // t1 = ros::Time::now();
+  t1 = rclcpp::Clock().now();
   NonUniformBspline pos = NonUniformBspline(ctrl_pts, 3, ts);
 
   double to = pos.getTimeSum();
@@ -198,7 +205,8 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
   bool feasible = pos.checkFeasibility(false);
 
   int iter_num = 0;
-  while (!feasible && ros::ok()) {
+  //while (!feasible && ros::ok()) {
+  while (!feasible) {
 
     feasible = pos.reallocateTime();
 
@@ -211,9 +219,11 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
   double tn = pos.getTimeSum();
 
   cout << "[kino replan]: Reallocate ratio: " << tn / to << endl;
-  if (tn / to > 3.0) ROS_ERROR("reallocate error.");
+  // if (tn / to > 3.0) ROS_ERROR("reallocate error.");
+  if (tn / to > 3.0) std::cout << "\033[1;31m[kino replan]: reallocate error.\033[0m" << std::endl;
 
-  t_adjust = (ros::Time::now() - t1).toSec();
+  // t_adjust = (ros::Time::now() - t1).toSec();
+  t_adjust = (rclcpp::Clock().now() - t1).seconds();
 
   // save planned results
 
@@ -289,7 +299,8 @@ bool FastPlannerManager::planGlobalTraj(const Eigen::Vector3d& start_pos) {
 
   PolynomialTraj gl_traj = minSnapTraj(pos, zero, zero, zero, zero, time);
 
-  auto time_now = ros::Time::now();
+  // auto time_now = ros::Time::now();
+  auto time_now = rclcpp::Clock().now();
   global_data_.setGlobalTraj(gl_traj, time_now);
 
   // truncate a local trajectory
@@ -301,7 +312,8 @@ bool FastPlannerManager::planGlobalTraj(const Eigen::Vector3d& start_pos) {
   global_data_.setLocalTraj(bspline, 0.0, duration, 0.0);
   local_data_.position_traj_ = bspline;
   local_data_.start_time_    = time_now;
-  ROS_INFO("global trajectory generated.");
+  // ROS_INFO("global trajectory generated.");
+  std::cout << "planner_manager: global trajectory generated." << std::endl;
 
   updateTrajInfo();
 
@@ -309,13 +321,16 @@ bool FastPlannerManager::planGlobalTraj(const Eigen::Vector3d& start_pos) {
 }
 
 bool FastPlannerManager::topoReplan(bool collide) {
-  ros::Time t1, t2;
+  // ros::Time t1;
+  rclcpp::Time t1;
 
   /* truncate a new local segment for replanning */
-  ros::Time time_now = ros::Time::now();
-  double    t_now    = (time_now - global_data_.global_start_time_).toSec();
-  double    local_traj_dt, local_traj_duration;
-  double    time_inc = 0.0;
+  // ros::Time time_now = ros::Time::now();
+  // double    t_now    = (time_now - global_data_.global_start_time_).toSec();
+  rclcpp::Time time_now = rclcpp::Clock().now();
+  double t_now = (time_now - global_data_.global_start_time_).seconds();
+  double local_traj_dt, local_traj_duration;
+  double time_inc = 0.0;
 
   Eigen::MatrixXd   ctrl_pts = reparamLocalTraj(t_now, local_traj_dt, local_traj_duration);
   NonUniformBspline init_traj(ctrl_pts, 3, local_traj_dt);
@@ -332,7 +347,7 @@ bool FastPlannerManager::topoReplan(bool collide) {
     findCollisionRange(colli_start, colli_end, start_pts, end_pts);
 
     if (colli_start.size() == 1 && colli_end.size() == 0) {
-      ROS_WARN("Init traj ends in obstacle, no replanning.");
+      std::cout << "\033[1;33mplanner_manager: Init traj ends in obstacle, no replanning.\033[0m" << std::endl;
       local_data_.position_traj_ = init_traj;
       global_data_.setLocalTraj(init_traj, t_now, local_traj_duration + t_now, 0.0);
 
@@ -341,7 +356,7 @@ bool FastPlannerManager::topoReplan(bool collide) {
 
       // local segment is in collision, call topological replanning
       /* search topological distinctive paths */
-      ROS_INFO("[Topo]: ---------");
+      std::cout << "planner_manager: [Topo]: ---------" << std::endl;
       plan_data_.clearTopoPaths();
       list<GraphNode::Ptr>            graph;
       vector<vector<Eigen::Vector3d>> raw_paths, filtered_paths, select_paths;
@@ -349,13 +364,13 @@ bool FastPlannerManager::topoReplan(bool collide) {
                                raw_paths, filtered_paths, select_paths);
 
       if (select_paths.size() == 0) {
-        ROS_WARN("No path.");
+        std::cout << "\033[1;33mplanner_manager: No path.\033[0m" << std::endl;
         return false;
       }
       plan_data_.addTopoPaths(graph, raw_paths, filtered_paths, select_paths);
 
       /* optimize trajectory using different topo paths */
-      ROS_INFO("[Optimize]: ---------");
+      std::cout << "planner_manager: [Optimize]: ---------" << std::endl;
       t1 = ros::Time::now();
 
       plan_data_.topo_traj_pos1_.resize(select_paths.size());
@@ -369,8 +384,9 @@ bool FastPlannerManager::topoReplan(bool collide) {
       }
       for (int i = 0; i < select_paths.size(); ++i) optimize_threads[i].join();
 
-      double t_opt = (ros::Time::now() - t1).toSec();
-      cout << "[planner]: optimization time: " << t_opt << endl;
+      // double t_opt = (ros::Time::now() - t1).toSec();
+      double t_opt = (rclcpp::Clock().now() - t1).seconds();
+      cout << "planner_manager: optimization time: " << t_opt << endl;
       selectBestTraj(best_traj);
       refineTraj(best_traj, time_inc);
 

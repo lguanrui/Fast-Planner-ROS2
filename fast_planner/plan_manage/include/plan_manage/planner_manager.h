@@ -37,8 +37,6 @@
 
 #include <plan_manage/plan_container.hpp>
 
-#include <ros/ros.h>
-
 namespace fast_planner {
 
 // Fast Planner Manager
@@ -63,6 +61,7 @@ public:
                                         bool use_optimization);
 
   void setGlobalWaypoints(vector<Eigen::Vector3d>& waypoints);
+  void setSDFPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
 
   bool checkTrajCollision(double& distance);
 

@@ -30,6 +30,9 @@
 #include <std_msgs/msg/empty.hpp>
 #include <vector>
 #include <visualization_msgs/msg/marker.hpp>
+#include <message_filters/subscriber.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/time_synchronizer.h>
 
 #include <bspline_opt/bspline_optimizer.h>
 #include <path_searching/kinodynamic_astar.h>
@@ -84,11 +87,21 @@ private:
   int current_wp_;
 
   /* ROS2 utils */
-  rclcpp::TimerBase::SharedPtr exec_timer_, safety_timer_, vis_timer_, test_something_timer_;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, nav_msgs::msg::Odometry>
+      SyncPolicyImageOdom;
+  //typedef std::shared_ptr<message_filters::Synchronizer<SyncPolicyImageOdom>> SynchronizerImageOdom;
+
+  rclcpp::TimerBase::SharedPtr occ_timer_, esdf_timer_, vis_timer_;
+  rclcpp::TimerBase::SharedPtr exec_timer_, safety_timer_;
+
+  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr indep_cloud_sub_;
   rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr waypoint_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
-  rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr replan_pub_, new_pub_;
+
+  rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr replan_pub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr bspline_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub_, esdf_pub_, map_inf_pub_, update_range_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr unknown_pub_, depth_pub_;
 
   /* helper functions */
   void init(); // initialize
@@ -135,6 +148,7 @@ void KinoReplanFSM::init() {
     this->get_parameter("fsm.waypoint" + std::to_string(i) + "_z", waypoints_[i][2]);
   }
 
+  /* planner manager params */
   this->declare_parameter("manager.max_vel", -1.0);
   this->declare_parameter("manager.max_acc", -1.0);
   this->declare_parameter("manager.max_jerk", -1.0);
@@ -158,6 +172,95 @@ void KinoReplanFSM::init() {
   use_topo_path = false;
   use_optimization = true;
 
+  /* get sdf_map params*/
+  MappingParameters mp;
+  double x_size, y_size, z_size;
+  this->declare_parameter("sdf_map/resolution", -1.0);
+  this->declare_parameter("sdf_map/map_size_x", -1.0);
+  this->declare_parameter("sdf_map/map_size_y", -1.0);
+  this->declare_parameter("sdf_map/map_size_z", -1.0);
+  this->declare_parameter("sdf_map/local_update_range_x", -1.0);
+  this->declare_parameter("sdf_map/local_update_range_y", -1.0);
+  this->declare_parameter("sdf_map/local_update_range_z", -1.0);
+  this->declare_parameter("sdf_map/obstacles_inflation", -1.0);
+
+  this->declare_parameter("sdf_map/fx", -1.0);
+  this->declare_parameter("sdf_map/fy", -1.0);
+  this->declare_parameter("sdf_map/cx", -1.0);
+  this->declare_parameter("sdf_map/cy", -1.0);
+
+  this->declare_parameter("sdf_map/use_depth_filter", true);
+  this->declare_parameter("sdf_map/depth_filter_tolerance", 1.0);
+  this->declare_parameter("sdf_map/depth_filter_maxdist", -1.0);
+  this->declare_parameter("sdf_map/depth_filter_mindist", -1.0);
+  this->declare_parameter("sdf_map/depth_filter_margin", -1);
+  this->declare_parameter("sdf_map/k_depth_scaling_factor", -1.0);
+  this->declare_parameter("sdf_map/skip_pixel", -1);
+
+  this->declare_parameter("sdf_map/p_hit", 0.70);
+  this->declare_parameter("sdf_map/p_miss", 0.35);
+  this->declare_parameter("sdf_map/p_min", 0.12);
+  this->declare_parameter("sdf_map/p_max", 0.97);
+  this->declare_parameter("sdf_map/p_occ", 0.80);
+  this->declare_parameter("sdf_map/min_ray_length", -0.1);
+  this->declare_parameter("sdf_map/max_ray_length", -0.1);
+
+  this->declare_parameter("sdf_map/esdf_slice_height", -0.1);
+  this->declare_parameter("sdf_map/visualization_truncate_height", -0.1);
+  this->declare_parameter("sdf_map/virtual_ceil_height", -0.1);
+
+  this->declare_parameter("sdf_map/show_occ_time", false);
+  this->declare_parameter("sdf_map/show_esdf_time", false);
+  this->declare_parameter("sdf_map/pose_type", 1);
+
+  this->declare_parameter("sdf_map/frame_id", std::string("world"));
+  this->declare_parameter("sdf_map/local_bound_inflate", 1.0);
+  this->declare_parameter("sdf_map/local_map_margin", 1);
+  this->declare_parameter("sdf_map/ground_height", 1.0);
+
+  this->get_parameter("sdf_map/resolution", mp.resolution_);
+  this->get_parameter("sdf_map/map_size_x", x_size);
+  this->get_parameter("sdf_map/map_size_y", y_size);
+  this->get_parameter("sdf_map/map_size_z", z_size);
+  this->get_parameter("sdf_map/local_update_range_x", mp.local_update_range_(0));
+  this->get_parameter("sdf_map/local_update_range_y", mp.local_update_range_(1));
+  this->get_parameter("sdf_map/local_update_range_z", mp.local_update_range_(2));
+  this->get_parameter("sdf_map/obstacles_inflation", mp.obstacles_inflation_);
+
+  this->get_parameter("sdf_map/fx", mp.fx_);
+  this->get_parameter("sdf_map/fy", mp.fy_);
+  this->get_parameter("sdf_map/cx", mp.cx_);
+  this->get_parameter("sdf_map/cy", mp.cy_);
+
+  this->get_parameter("sdf_map/use_depth_filter", mp.use_depth_filter_);
+  this->get_parameter("sdf_map/depth_filter_tolerance", mp.depth_filter_tolerance_);
+  this->get_parameter("sdf_map/depth_filter_maxdist", mp.depth_filter_maxdist_);
+  this->get_parameter("sdf_map/depth_filter_mindist", mp.depth_filter_mindist_);
+  this->get_parameter("sdf_map/depth_filter_margin", mp.depth_filter_margin_);
+  this->get_parameter("sdf_map/k_depth_scaling_factor", mp.k_depth_scaling_factor_);
+  this->get_parameter("sdf_map/skip_pixel", mp.skip_pixel_);
+
+  this->get_parameter("sdf_map/p_hit", mp.p_hit_);
+  this->get_parameter("sdf_map/p_miss", mp.p_miss_);
+  this->get_parameter("sdf_map/p_min", mp.p_min_);
+  this->get_parameter("sdf_map/p_max", mp.p_max_);
+  this->get_parameter("sdf_map/p_occ", mp.p_occ_);
+  this->get_parameter("sdf_map/min_ray_length", mp.min_ray_length_);
+  this->get_parameter("sdf_map/max_ray_length", mp.max_ray_length_);
+
+  this->get_parameter("sdf_map/esdf_slice_height", mp.esdf_slice_height_);
+  this->get_parameter("sdf_map/visualization_truncate_height", mp.visualization_truncate_height_);
+  this->get_parameter("sdf_map/virtual_ceil_height", mp.virtual_ceil_height_);
+
+  this->get_parameter("sdf_map/show_occ_time", mp.show_occ_time_);
+  this->get_parameter("sdf_map/show_esdf_time", mp.show_esdf_time_);
+  this->get_parameter("sdf_map/pose_type", mp.pose_type_);
+
+  this->get_parameter("sdf_map/frame_id", mp.frame_id_);
+  this->get_parameter("sdf_map/local_bound_inflate", mp.local_bound_inflate_);
+  this->get_parameter("sdf_map/local_map_margin", mp.local_map_margin_);
+  this->get_parameter("sdf_map/ground_height", mp.ground_height_);
+
   // Create a timer to execute the FSM callback every 100 milliseconds
   exec_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(10),
@@ -179,14 +282,78 @@ void KinoReplanFSM::init() {
   // Create a publisher for the "replan" topic to signal replanning
   replan_pub_ = this->create_publisher<std_msgs::msg::Empty>("replan", 10);
 
+ /* init callback */
+  auto depth_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, "/sdf_map/depth");
+  auto sync_odom_sub_ = std::make_shared<message_filters::Subscriber<nav_msgs::msg::Odometry>>(this, "/sdf_map/odom");
+  auto depth_odom_sync = std::make_shared<message_filters::Synchronizer<SyncPolicyImageOdom>>(
+      SyncPolicyImageOdom(100), *depth_sub_, *sync_odom_sub_);
+  depth_odom_sync->registerCallback(std::bind(&KinoReplanFSM::depthOdomCallback, this, std::placeholders::_1, std::placeholders::_2, 0, 1));
+
+// use odometry and point cloud
+// indep_cloud_sub_ = node_.subscribe<sensor_msgs::PointCloud2>("/sdf_map/cloud", 10, &SDFMap::cloudCallback, this);
+
+// occ_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::updateOccupancyCallback, this);
+// esdf_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::updateESDFCallback, this);
+// vis_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::visCallback, this);
+
+// map_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/occupancy", 10);
+// map_inf_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/occupancy_inflate", 10);
+// esdf_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/esdf", 10);
+// update_range_pub_ = node_.advertise<visualization_msgs::Marker>("/sdf_map/update_range", 10);
+
+// unknown_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/unknown", 10);
+// depth_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/depth_cloud", 10);
+
+indep_cloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
+    "/sdf_map/cloud", 10, std::bind(&KinoReplanFSM::cloudCallback, this, std::placeholders::_1));
+
+occ_timer_ = this->create_wall_timer(
+    std::chrono::milliseconds(50), std::bind(&KinoReplanFSM::updateOccupancyCallback, this));
+
+esdf_timer_ = this->create_wall_timer(
+    std::chrono::milliseconds(50), std::bind(&KinoReplanFSM::updateESDFCallback, this));
+
+vis_timer_ = this->create_wall_timer(
+    std::chrono::milliseconds(50), std::bind(&KinoReplanFSM::visCallback, this));
+
+map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/occupancy", 10);
+map_inf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/occupancy_inflate", 10);
+esdf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/esdf", 10);
+update_range_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/sdf_map/update_range", 10);
+
+unknown_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/unknown", 10);
+depth_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/depth_cloud", 10);
+
   // Create a publisher for the "new" topic to signal new events
 
   /* initialize main modules */
   planner_manager_.reset(new FastPlannerManager);
-  planner_manager_->initPlanModules(pp, use_geometric_path, use_kinodynamic_path, use_topo_path,
+  planner_manager_->initPlanModules(pp, mp, use_geometric_path, use_kinodynamic_path, use_topo_path,
                                     use_optimization);
-  //visualization_.reset(new PlanningVisualization(nh));
+  visualization_.reset(new PlanningVisualization(nh));
 
+}
+
+void KinoReplanFSM::depthOdomCallback(const sensor_msgs::msg::Image::SharedPtr depth_msg, const nav_msgs::msg::Odometry::SharedPtr odom_msg, int param1, int param2) {
+
+planner_manager_->sdf_map_->depthOdomCallback(depth_msg, odom_msg);
+
+}
+
+void KinoReplanFSM::cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr cloud_msg) {
+  planner_manager_->sdf_map_->cloudCallback(cloud_msg);
+}
+
+void KinoReplanFSM::updateOccupancyCallback() {
+  planner_manager_->sdf_map_->updateOccupancyCallback();
+}
+
+void KinoReplanFSM::updateESDFCallback() {
+  planner_manager_->sdf_map_->updateESDFCallback();
+}
+
+void KinoReplanFSM::visCallback() {
+  // Placeholder for visualization callback
 }
 
 void KinoReplanFSM::waypointCallback(const nav_msgs::msg::Path::SharedPtr msg) {
