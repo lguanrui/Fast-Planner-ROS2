@@ -162,9 +162,6 @@ void KinoReplanFSM::init() {
   //planner_manager_->initPlanModules(nh);
   //visualization_.reset(new PlanningVisualization(nh));
 
-
-
-
 }
 
 void KinoReplanFSM::waypointCallback(const nav_msgs::msg::Path::SharedPtr msg) {
@@ -465,5 +462,7 @@ bool KinoReplanFSM::callKinodynamicReplan() {
   }
 }
 
-// KinoReplanFSM::
 }  // namespace fast_planner
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(fast_planner::KinoReplanFSM)
