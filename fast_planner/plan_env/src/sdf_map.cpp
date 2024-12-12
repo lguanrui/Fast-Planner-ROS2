@@ -719,22 +719,23 @@ void SDFMap::updateOccupancyCallback() {
   if (!md_.occ_need_update_) return;
 
   /* update occupancy */
-  ros::Time t1, t2;
-  t1 = ros::Time::now();
+auto t1 = std::chrono::high_resolution_clock::now();
 
   projectDepthImage();
   raycastProcess();
 
   if (md_.local_updated_) clearAndInflateLocalMap();
 
-  t2 = ros::Time::now();
+auto t2 = std::chrono::high_resolution_clock::now();
 
-  md_.fuse_time_ += (t2 - t1).toSec();
-  md_.max_fuse_time_ = max(md_.max_fuse_time_, (t2 - t1).toSec());
+double current_fuse_time = std::chrono::duration<double>(t2 - t1).count();
+md_.fuse_time_ += current_fuse_time;
+md_.max_fuse_time_ = max(md_.max_fuse_time_, current_fuse_time);
 
   if (mp_.show_occ_time_)
-    ROS_WARN("Fusion: cur t = %lf, avg t = %lf, max t = %lf", (t2 - t1).toSec(),
-             md_.fuse_time_ / md_.update_num_, md_.max_fuse_time_);
+    cout << "\033[33m[sdfmap]: Fusion: cur t = " << current_fuse_time
+         << ", avg t = " << md_.fuse_time_ / md_.update_num_
+         << ", max t = " << md_.max_fuse_time_ << "\033[0m" << endl;
 
   md_.occ_need_update_ = false;
   if (md_.local_updated_) md_.esdf_need_update_ = true;
@@ -742,24 +743,25 @@ void SDFMap::updateOccupancyCallback() {
 }
 
 void SDFMap::updateESDFCallback() {
-  if (!md_.esdf_need_update_) return;
+    if (!md_.esdf_need_update_) return;
 
-  /* esdf */
-  ros::Time t1, t2;
-  t1 = ros::Time::now();
+    /* esdf */
+    auto t1 = std::chrono::high_resolution_clock::now();
 
-  updateESDF3d();
+    updateESDF3d();
 
-  t2 = ros::Time::now();
+    auto t2 = std::chrono::high_resolution_clock::now();
 
-  md_.esdf_time_ += (t2 - t1).toSec();
-  md_.max_esdf_time_ = max(md_.max_esdf_time_, (t2 - t1).toSec());
+    double current_esdf_time = std::chrono::duration<double>(t2 - t1).count();
+    md_.esdf_time_ += current_esdf_time;
+    md_.max_esdf_time_ = max(md_.max_esdf_time_, current_esdf_time);
 
-  if (mp_.show_esdf_time_)
-    ROS_WARN("ESDF: cur t = %lf, avg t = %lf, max t = %lf", (t2 - t1).toSec(),
-             md_.esdf_time_ / md_.update_num_, md_.max_esdf_time_);
+    if (mp_.show_esdf_time_)
+        cout << "\033[33m[sdfmap]: ESDF: cur t = " << current_esdf_time
+             << ", avg t = " << md_.esdf_time_ / md_.update_num_
+             << ", max t = " << md_.max_esdf_time_ << "\033[0m" << endl;
 
-  md_.esdf_need_update_ = false;
+    md_.esdf_need_update_ = false;
 }
 
 void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
