@@ -1,13 +1,13 @@
 /**
-* This file is part of Fast-Planner.
+* This file is part of Fast-Planner-ROS2.
 *
-* Copyright 2019 Boyu Zhou, Aerial Robotics Group, Hong Kong University of Science and Technology, <uav.ust.hk>
-* Developed by Boyu Zhou <bzhouai at connect dot ust dot hk>, <uv dot boyuzhou at gmail dot com>
-* for more information see <https://github.com/HKUST-Aerial-Robotics/Fast-Planner>.
+* Copyright 2024 Guanrui Li, Aerial-robot Control and Perception Lab, WPI
+* Developed by Guanrui Li <lguanrui.github@gmail.com>
+* for more information see <https://github.com/lguanrui/Fast-Planner-ROS2.git>.
 * If you use this code, please cite the respective publications as
 * listed on the above website.
 *
-* Fast-Planner is free software: you can redistribute it and/or modify
+* Fast-Planner-ROS2 is free software: you can redistribute it and/or modify
 * it under the terms of the GNU Lesser General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
@@ -21,9 +21,6 @@
 * along with Fast-Planner. If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
-// #include <fstream>
 #include <plan_manage/planner_manager.h>
 #include <thread>
 
@@ -35,22 +32,12 @@ FastPlannerManager::FastPlannerManager() {}
 
 FastPlannerManager::~FastPlannerManager() { std::cout << "des manager" << std::endl; }
 
-void FastPlannerManager::initPlanModules(ros::NodeHandle& nh) {
+void FastPlannerManager::initPlanModules(PlanParameters& pp, bool use_geometric_path,
+                                        bool use_kinodynamic_path, bool use_topo_path,
+                                        bool use_optimization) {
   /* read algorithm parameters */
 
-  nh.param("manager/max_vel", pp_.max_vel_, -1.0);
-  nh.param("manager/max_acc", pp_.max_acc_, -1.0);
-  nh.param("manager/max_jerk", pp_.max_jerk_, -1.0);
-  nh.param("manager/dynamic_environment", pp_.dynamic_, -1);
-  nh.param("manager/clearance_threshold", pp_.clearance_, -1.0);
-  nh.param("manager/local_segment_length", pp_.local_traj_len_, -1.0);
-  nh.param("manager/control_points_distance", pp_.ctrl_pt_dist, -1.0);
-
-  bool use_geometric_path, use_kinodynamic_path, use_topo_path, use_optimization, use_active_perception;
-  nh.param("manager/use_geometric_path", use_geometric_path, false);
-  nh.param("manager/use_kinodynamic_path", use_kinodynamic_path, false);
-  nh.param("manager/use_topo_path", use_topo_path, false);
-  nh.param("manager/use_optimization", use_optimization, false);
+  pp_ = pp;
 
   local_data_.traj_id_ = 0;
   sdf_map_.reset(new SDFMap);

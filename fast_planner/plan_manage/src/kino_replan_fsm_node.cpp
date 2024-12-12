@@ -112,6 +112,7 @@ void KinoReplanFSM::init() {
   exec_state_  = FSM_EXEC_STATE::INIT;
   have_target_ = false;
   have_odom_   = false;
+  PlanParameters pp;
 
   /*  fsm param  */
   this->declare_parameter("fsm.flight_type", -1);
@@ -133,6 +134,29 @@ void KinoReplanFSM::init() {
     this->get_parameter("fsm.waypoint" + std::to_string(i) + "_y", waypoints_[i][1]);
     this->get_parameter("fsm.waypoint" + std::to_string(i) + "_z", waypoints_[i][2]);
   }
+
+  this->declare_parameter("manager.max_vel", -1.0);
+  this->declare_parameter("manager.max_acc", -1.0);
+  this->declare_parameter("manager.max_jerk", -1.0);
+  this->declare_parameter("manager.dynamic_environment", -1);
+  this->declare_parameter("manager.clearance_threshold", -1.0);
+  this->declare_parameter("manager.local_segment_length", -1.0);
+  this->declare_parameter("manager.control_points_distance", -1.0);
+
+  this->get_parameter("manager.max_vel", pp.max_vel_);
+  this->get_parameter("manager.max_acc", pp.max_acc_);
+  this->get_parameter("manager.max_jerk", pp.max_jerk_);
+  this->get_parameter("manager.dynamic_environment", pp.dynamic_);
+  this->get_parameter("manager.clearance_threshold", pp.clearance_);
+  this->get_parameter("manager.local_segment_length", pp.local_traj_len_);
+  this->get_parameter("manager.control_points_distance", pp.ctrl_pt_dist);
+
+  bool use_geometric_path, use_kinodynamic_path, use_topo_path, use_optimization, use_active_perception;
+
+  use_geometric_path = false;
+  use_kinodynamic_path = true;
+  use_topo_path = false;
+  use_optimization = true;
 
   // Create a timer to execute the FSM callback every 100 milliseconds
   exec_timer_ = this->create_wall_timer(
@@ -159,7 +183,8 @@ void KinoReplanFSM::init() {
 
   /* initialize main modules */
   planner_manager_.reset(new FastPlannerManager);
-  //planner_manager_->initPlanModules(nh);
+  planner_manager_->initPlanModules(pp, use_geometric_path, use_kinodynamic_path, use_topo_path,
+                                    use_optimization);
   //visualization_.reset(new PlanningVisualization(nh));
 
 }

@@ -58,7 +58,10 @@ public:
 
   void planYaw(const Eigen::Vector3d& start_yaw);
 
-  void initPlanModules(ros::NodeHandle& nh);
+  void initPlanModules(PlanParameters& pp, bool use_geometric_path,
+                                        bool use_kinodynamic_path, bool use_topo_path,
+                                        bool use_optimization);
+
   void setGlobalWaypoints(vector<Eigen::Vector3d>& waypoints);
 
   bool checkTrajCollision(double& distance);
