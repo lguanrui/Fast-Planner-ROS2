@@ -28,7 +28,7 @@
 
 #include <Eigen/Eigen>
 #include <vector>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <bspline/non_uniform_bspline.h>
 #include <poly_traj/polynomial_traj.h>
@@ -204,11 +204,11 @@ struct LocalTrajData {
 
   int traj_id_;
   double duration_;
-  ros::Time start_time_;
+  rclcpp::Time start_time_;
   Eigen::Vector3d start_pos_;
   NonUniformBspline position_traj_, velocity_traj_, acceleration_traj_, yaw_traj_, yawdot_traj_,
       yawdotdot_traj_;
-};
+};;
 
 class MidPlanData {
 public:
