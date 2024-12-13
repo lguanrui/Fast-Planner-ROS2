@@ -103,6 +103,11 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub_, esdf_pub_, map_inf_pub_, update_range_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr unknown_pub_, depth_pub_;
 
+  //void publishESDF();
+  //void publishUpdateRange();
+  //void publishUnknown();
+  //void publishDepth();
+
   /* helper functions */
   void init(); // initialize
   bool callKinodynamicReplan();        // front-end and back-end method
@@ -354,6 +359,11 @@ void KinoReplanFSM::updateESDFCallback() {
 
 void KinoReplanFSM::visCallback() {
   // Placeholder for visualization callback
+  sensor_msgs::msg::PointCloud2 map = planner_manager_->sdf_map_->publishMap();
+  map_pub_->publish(map);
+
+  sensor_msgs::msg::PointCloud2 map_inf = planner_manager_->sdf_map_->publishMapInflate(false);
+  map_inf_pub_->publish(map_inf);
 }
 
 void KinoReplanFSM::waypointCallback(const nav_msgs::msg::Path::SharedPtr msg) {

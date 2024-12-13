@@ -207,11 +207,24 @@ public:
                     int sign = 1);  // 1 pos, 2 neg, 3 combined
   void initMap(MappingParameters mp);
 
-  void publishMap();
-  void publishMapInflate(bool all_info = false);
+  // get depth image and camera pose
+  //void depthPoseCallback(const sensor_msgs::msg::Image::ConstSharedPtr img,
+  //                       const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose);
+  void depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr img, const nav_msgs::msg::Odometry::ConstSharedPtr odom);
+  void depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr img);
+  void cloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr img);
+  void poseCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose);
+  void odomCallback(const nav_msgs::msg::Odometry::ConstSharedPtr odom);
+
+  // update occupancy by raycasting, and update ESDF
+  void updateOccupancyCallback();
+  void updateESDFCallback();
+  void visCallback();
+
+  sensor_msgs::msg::PointCloud2 publishMap();
+  sensor_msgs::msg::PointCloud2 publishMapInflate(bool all_info = false);
   void publishESDF();
   void publishUpdateRange();
-
   void publishUnknown();
   void publishDepth();
 
@@ -233,20 +246,6 @@ private:
 
   template <typename F_get_val, typename F_set_val>
   void fillESDF(F_get_val f_get_val, F_set_val f_set_val, int start, int end, int dim);
-
-  // get depth image and camera pose
-  //void depthPoseCallback(const sensor_msgs::msg::Image::ConstSharedPtr img,
-  //                       const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose);
-  void depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr img, const nav_msgs::msg::Odometry::ConstSharedPtr odom);
-  void depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr img);
-  void cloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr img);
-  void poseCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose);
-  void odomCallback(const nav_msgs::msg::Odometry::ConstSharedPtr odom);
-
-  // update occupancy by raycasting, and update ESDF
-  void updateOccupancyCallback();
-  void updateESDFCallback();
-  void visCallback();
 
   // main update process
   void projectDepthImage();

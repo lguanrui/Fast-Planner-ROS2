@@ -710,10 +710,10 @@ void SDFMap::clearAndInflateLocalMap() {
   }
 }
 
-void SDFMap::visCallback(const ros::TimerEvent& /*event*/) {
-  publishMap();
-  publishMapInflate(false);
-}
+//void SDFMap::visCallback(const ros::TimerEvent& /*event*/) {
+//  publishMap();
+//  publishMapInflate(false);
+//}
 
 void SDFMap::updateOccupancyCallback() {
   if (!md_.occ_need_update_) return;
@@ -895,7 +895,7 @@ void SDFMap::cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr img) {
   md_.esdf_need_update_ = true;
 }
 
-void SDFMap::publishMap() {
+sensor_msgs::PointCloud2 SDFMap::publishMap() {
   // pcl::PointXYZ pt;
   // pcl::PointCloud<pcl::PointXYZ> cloud;
 
@@ -966,13 +966,16 @@ void SDFMap::publishMap() {
   cloud.height = 1;
   cloud.is_dense = true;
   cloud.header.frame_id = mp_.frame_id_;
-  sensor_msgs::PointCloud2 cloud_msg;
+  sensor_msgs::msg::PointCloud2 cloud_msg;
 
   pcl::toROSMsg(cloud, cloud_msg);
-  map_pub_.publish(cloud_msg);
+  return cloud_msg;
+
+  //map_pub_.publish(cloud_msg);
 }
 
-void SDFMap::publishMapInflate(bool all_info) {
+sensor_msgs::msg::PointCloud2 SDFMap::publishMapInflate(bool all_info) {
+
   pcl::PointXYZ pt;
   pcl::PointCloud<pcl::PointXYZ> cloud;
 
@@ -1007,15 +1010,16 @@ void SDFMap::publishMapInflate(bool all_info) {
   cloud.height = 1;
   cloud.is_dense = true;
   cloud.header.frame_id = mp_.frame_id_;
-  sensor_msgs::PointCloud2 cloud_msg;
+  sensor_msgs::msg::PointCloud2 cloud_msg;
 
   pcl::toROSMsg(cloud, cloud_msg);
-  map_inf_pub_.publish(cloud_msg);
+  return cloud_msg;
 
+  // map_inf_pub_.publish(cloud_msg);
   // ROS_INFO("pub map");
 }
 
-void SDFMap::publishUnknown() {
+/*void SDFMap::publishUnknown() {
   pcl::PointXYZ pt;
   pcl::PointCloud<pcl::PointXYZ> cloud;
 
@@ -1074,9 +1078,9 @@ void SDFMap::publishDepth() {
   sensor_msgs::PointCloud2 cloud_msg;
   pcl::toROSMsg(cloud, cloud_msg);
   depth_pub_.publish(cloud_msg);
-}
+}*/
 
-void SDFMap::publishUpdateRange() {
+/*void SDFMap::publishUpdateRange() {
   Eigen::Vector3d esdf_min_pos, esdf_max_pos, cube_pos, cube_scale;
   visualization_msgs::Marker mk;
   indexToPos(md_.local_bound_min_, esdf_min_pos);
@@ -1109,9 +1113,9 @@ void SDFMap::publishUpdateRange() {
   mk.pose.orientation.z = 0.0;
 
   update_range_pub_.publish(mk);
-}
+}*/
 
-void SDFMap::publishESDF() {
+/*void SDFMap::publishESDF() {
   double dist;
   pcl::PointCloud<pcl::PointXYZI> cloud;
   pcl::PointXYZI pt;
@@ -1154,7 +1158,7 @@ void SDFMap::publishESDF() {
   esdf_pub_.publish(cloud_msg);
 
   // ROS_INFO("pub esdf");
-}
+}*/
 
 void SDFMap::getSliceESDF(const double height, const double res, const Eigen::Vector4d& range,
                           vector<Eigen::Vector3d>& slice, vector<Eigen::Vector3d>& grad, int sign) {
