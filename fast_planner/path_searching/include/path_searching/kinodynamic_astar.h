@@ -2,8 +2,6 @@
 #define _KINODYNAMIC_ASTAR_H
 
 // #include <path_searching/matrix_hash.h>
-#include <ros/console.h>
-#include <ros/ros.h>
 #include <Eigen/Eigen>
 #include <boost/functional/hash.hpp>
 #include <iostream>
@@ -22,6 +20,15 @@ namespace fast_planner {
 #define IN_OPEN_SET 'b'
 #define NOT_EXPAND 'c'
 #define inf 1 >> 30
+
+struct KinodynamicAstarParams {
+  double max_tau, init_max_tau, max_vel, max_acc, w_time, horizon;
+  double resolution, time_resolution;
+  double lambda_heu;
+  int allocate_num, check_num;
+  bool optimistic;
+  double vel_margin;
+};
 
 class PathNode {
  public:
@@ -160,7 +167,7 @@ class KinodynamicAstar {
   enum { REACH_HORIZON = 1, REACH_END = 2, NO_PATH = 3, NEAR_END = 4 };
 
   /* main API */
-  void setParam(ros::NodeHandle& nh);
+  void setParam(KinodynamicAstarParams& kap);
   void init();
   void reset();
   int search(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel,

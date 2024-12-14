@@ -32,7 +32,7 @@ FastPlannerManager::FastPlannerManager() {}
 
 FastPlannerManager::~FastPlannerManager() { std::cout << "des manager" << std::endl; }
 
-void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& mp, bool use_geometric_path,
+void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& mp, KinodynamicAstarParams& kap, bool use_geometric_path,
                                         bool use_kinodynamic_path, bool use_topo_path,
                                         bool use_optimization) {
   /* read algorithm parameters */
@@ -50,7 +50,7 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& 
     geo_path_finder_->setParam(nh);
     geo_path_finder_->setEnvironment(edt_environment_);
     geo_path_finder_->init();
-  }
+  }*/
 
   if (use_kinodynamic_path) {
     kino_path_finder_.reset(new KinodynamicAstar);
@@ -59,16 +59,16 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& 
     kino_path_finder_->init();
   }
 
-  if (use_optimization) {
+  /*if (use_optimization) {
     bspline_optimizers_.resize(10);
     for (int i = 0; i < 10; ++i) {
       bspline_optimizers_[i].reset(new BsplineOptimizer);
       bspline_optimizers_[i]->setParam(nh);
       bspline_optimizers_[i]->setEnvironment(edt_environment_);
     }
-  }
+  }*/
 
-  if (use_topo_path) {
+  /*if (use_topo_path) {
     topo_prm_.reset(new TopologyPRM);
     topo_prm_->setEnvironment(edt_environment_);
     topo_prm_->init(nh);

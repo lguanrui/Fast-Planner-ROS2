@@ -176,95 +176,125 @@ void KinoReplanFSM::init() {
   use_kinodynamic_path = true;
   use_topo_path = false;
   use_optimization = true;
-
   /* get sdf_map params*/
   MappingParameters mp;
   double x_size, y_size, z_size;
-  this->declare_parameter("sdf_map/resolution", -1.0);
-  this->declare_parameter("sdf_map/map_size_x", -1.0);
-  this->declare_parameter("sdf_map/map_size_y", -1.0);
-  this->declare_parameter("sdf_map/map_size_z", -1.0);
-  this->declare_parameter("sdf_map/local_update_range_x", -1.0);
-  this->declare_parameter("sdf_map/local_update_range_y", -1.0);
-  this->declare_parameter("sdf_map/local_update_range_z", -1.0);
-  this->declare_parameter("sdf_map/obstacles_inflation", -1.0);
+  this->declare_parameter("sdf_map.resolution", -1.0);
+  this->declare_parameter("sdf_map.map_size_x", -1.0);
+  this->declare_parameter("sdf_map.map_size_y", -1.0);
+  this->declare_parameter("sdf_map.map_size_z", -1.0);
+  this->declare_parameter("sdf_map.local_update_range_x", -1.0);
+  this->declare_parameter("sdf_map.local_update_range_y", -1.0);
+  this->declare_parameter("sdf_map.local_update_range_z", -1.0);
+  this->declare_parameter("sdf_map.obstacles_inflation", -1.0);
 
-  this->declare_parameter("sdf_map/fx", -1.0);
-  this->declare_parameter("sdf_map/fy", -1.0);
-  this->declare_parameter("sdf_map/cx", -1.0);
-  this->declare_parameter("sdf_map/cy", -1.0);
+  this->declare_parameter("sdf_map.fx", -1.0);
+  this->declare_parameter("sdf_map.fy", -1.0);
+  this->declare_parameter("sdf_map.cx", -1.0);
+  this->declare_parameter("sdf_map.cy", -1.0);
 
-  this->declare_parameter("sdf_map/use_depth_filter", true);
-  this->declare_parameter("sdf_map/depth_filter_tolerance", 1.0);
-  this->declare_parameter("sdf_map/depth_filter_maxdist", -1.0);
-  this->declare_parameter("sdf_map/depth_filter_mindist", -1.0);
-  this->declare_parameter("sdf_map/depth_filter_margin", -1);
-  this->declare_parameter("sdf_map/k_depth_scaling_factor", -1.0);
-  this->declare_parameter("sdf_map/skip_pixel", -1);
+  this->declare_parameter("sdf_map.use_depth_filter", true);
+  this->declare_parameter("sdf_map.depth_filter_tolerance", 1.0);
+  this->declare_parameter("sdf_map.depth_filter_maxdist", -1.0);
+  this->declare_parameter("sdf_map.depth_filter_mindist", -1.0);
+  this->declare_parameter("sdf_map.depth_filter_margin", -1);
+  this->declare_parameter("sdf_map.k_depth_scaling_factor", -1.0);
+  this->declare_parameter("sdf_map.skip_pixel", -1);
 
-  this->declare_parameter("sdf_map/p_hit", 0.70);
-  this->declare_parameter("sdf_map/p_miss", 0.35);
-  this->declare_parameter("sdf_map/p_min", 0.12);
-  this->declare_parameter("sdf_map/p_max", 0.97);
-  this->declare_parameter("sdf_map/p_occ", 0.80);
-  this->declare_parameter("sdf_map/min_ray_length", -0.1);
-  this->declare_parameter("sdf_map/max_ray_length", -0.1);
+  this->declare_parameter("sdf_map.p_hit", 0.70);
+  this->declare_parameter("sdf_map.p_miss", 0.35);
+  this->declare_parameter("sdf_map.p_min", 0.12);
+  this->declare_parameter("sdf_map.p_max", 0.97);
+  this->declare_parameter("sdf_map.p_occ", 0.80);
+  this->declare_parameter("sdf_map.min_ray_length", -0.1);
+  this->declare_parameter("sdf_map.max_ray_length", -0.1);
 
-  this->declare_parameter("sdf_map/esdf_slice_height", -0.1);
-  this->declare_parameter("sdf_map/visualization_truncate_height", -0.1);
-  this->declare_parameter("sdf_map/virtual_ceil_height", -0.1);
+  this->declare_parameter("sdf_map.esdf_slice_height", -0.1);
+  this->declare_parameter("sdf_map.visualization_truncate_height", -0.1);
+  this->declare_parameter("sdf_map.virtual_ceil_height", -0.1);
 
-  this->declare_parameter("sdf_map/show_occ_time", false);
-  this->declare_parameter("sdf_map/show_esdf_time", false);
-  this->declare_parameter("sdf_map/pose_type", 1);
+  this->declare_parameter("sdf_map.show_occ_time", false);
+  this->declare_parameter("sdf_map.show_esdf_time", false);
+  this->declare_parameter("sdf_map.pose_type", 1);
 
-  this->declare_parameter("sdf_map/frame_id", std::string("world"));
-  this->declare_parameter("sdf_map/local_bound_inflate", 1.0);
-  this->declare_parameter("sdf_map/local_map_margin", 1);
-  this->declare_parameter("sdf_map/ground_height", 1.0);
+  this->declare_parameter("sdf_map.frame_id", std::string("world"));
+  this->declare_parameter("sdf_map.local_bound_inflate", 1.0);
+  this->declare_parameter("sdf_map.local_map_margin", 1);
+  this->declare_parameter("sdf_map.ground_height", 1.0);
 
-  this->get_parameter("sdf_map/resolution", mp.resolution_);
-  this->get_parameter("sdf_map/map_size_x", x_size);
-  this->get_parameter("sdf_map/map_size_y", y_size);
-  this->get_parameter("sdf_map/map_size_z", z_size);
-  this->get_parameter("sdf_map/local_update_range_x", mp.local_update_range_(0));
-  this->get_parameter("sdf_map/local_update_range_y", mp.local_update_range_(1));
-  this->get_parameter("sdf_map/local_update_range_z", mp.local_update_range_(2));
-  this->get_parameter("sdf_map/obstacles_inflation", mp.obstacles_inflation_);
+  this->get_parameter("sdf_map.resolution", mp.resolution_);
+  this->get_parameter("sdf_map.map_size_x", x_size);
+  this->get_parameter("sdf_map.map_size_y", y_size);
+  this->get_parameter("sdf_map.map_size_z", z_size);
+  this->get_parameter("sdf_map.local_update_range_x", mp.local_update_range_(0));
+  this->get_parameter("sdf_map.local_update_range_y", mp.local_update_range_(1));
+  this->get_parameter("sdf_map.local_update_range_z", mp.local_update_range_(2));
+  this->get_parameter("sdf_map.obstacles_inflation", mp.obstacles_inflation_);
 
-  this->get_parameter("sdf_map/fx", mp.fx_);
-  this->get_parameter("sdf_map/fy", mp.fy_);
-  this->get_parameter("sdf_map/cx", mp.cx_);
-  this->get_parameter("sdf_map/cy", mp.cy_);
+  this->get_parameter("sdf_map.fx", mp.fx_);
+  this->get_parameter("sdf_map.fy", mp.fy_);
+  this->get_parameter("sdf_map.cx", mp.cx_);
+  this->get_parameter("sdf_map.cy", mp.cy_);
 
-  this->get_parameter("sdf_map/use_depth_filter", mp.use_depth_filter_);
-  this->get_parameter("sdf_map/depth_filter_tolerance", mp.depth_filter_tolerance_);
-  this->get_parameter("sdf_map/depth_filter_maxdist", mp.depth_filter_maxdist_);
-  this->get_parameter("sdf_map/depth_filter_mindist", mp.depth_filter_mindist_);
-  this->get_parameter("sdf_map/depth_filter_margin", mp.depth_filter_margin_);
-  this->get_parameter("sdf_map/k_depth_scaling_factor", mp.k_depth_scaling_factor_);
-  this->get_parameter("sdf_map/skip_pixel", mp.skip_pixel_);
+  this->get_parameter("sdf_map.use_depth_filter", mp.use_depth_filter_);
+  this->get_parameter("sdf_map.depth_filter_tolerance", mp.depth_filter_tolerance_);
+  this->get_parameter("sdf_map.depth_filter_maxdist", mp.depth_filter_maxdist_);
+  this->get_parameter("sdf_map.depth_filter_mindist", mp.depth_filter_mindist_);
+  this->get_parameter("sdf_map.depth_filter_margin", mp.depth_filter_margin_);
+  this->get_parameter("sdf_map.k_depth_scaling_factor", mp.k_depth_scaling_factor_);
+  this->get_parameter("sdf_map.skip_pixel", mp.skip_pixel_);
 
-  this->get_parameter("sdf_map/p_hit", mp.p_hit_);
-  this->get_parameter("sdf_map/p_miss", mp.p_miss_);
-  this->get_parameter("sdf_map/p_min", mp.p_min_);
-  this->get_parameter("sdf_map/p_max", mp.p_max_);
-  this->get_parameter("sdf_map/p_occ", mp.p_occ_);
-  this->get_parameter("sdf_map/min_ray_length", mp.min_ray_length_);
-  this->get_parameter("sdf_map/max_ray_length", mp.max_ray_length_);
+  this->get_parameter("sdf_map.p_hit", mp.p_hit_);
+  this->get_parameter("sdf_map.p_miss", mp.p_miss_);
+  this->get_parameter("sdf_map.p_min", mp.p_min_);
+  this->get_parameter("sdf_map.p_max", mp.p_max_);
+  this->get_parameter("sdf_map.p_occ", mp.p_occ_);
+  this->get_parameter("sdf_map.min_ray_length", mp.min_ray_length_);
+  this->get_parameter("sdf_map.max_ray_length", mp.max_ray_length_);
 
-  this->get_parameter("sdf_map/esdf_slice_height", mp.esdf_slice_height_);
-  this->get_parameter("sdf_map/visualization_truncate_height", mp.visualization_truncate_height_);
-  this->get_parameter("sdf_map/virtual_ceil_height", mp.virtual_ceil_height_);
+  this->get_parameter("sdf_map.esdf_slice_height", mp.esdf_slice_height_);
+  this->get_parameter("sdf_map.visualization_truncate_height", mp.visualization_truncate_height_);
+  this->get_parameter("sdf_map.virtual_ceil_height", mp.virtual_ceil_height_);
 
-  this->get_parameter("sdf_map/show_occ_time", mp.show_occ_time_);
-  this->get_parameter("sdf_map/show_esdf_time", mp.show_esdf_time_);
-  this->get_parameter("sdf_map/pose_type", mp.pose_type_);
+  this->get_parameter("sdf_map.show_occ_time", mp.show_occ_time_);
+  this->get_parameter("sdf_map.show_esdf_time", mp.show_esdf_time_);
+  this->get_parameter("sdf_map.pose_type", mp.pose_type_);
 
-  this->get_parameter("sdf_map/frame_id", mp.frame_id_);
-  this->get_parameter("sdf_map/local_bound_inflate", mp.local_bound_inflate_);
-  this->get_parameter("sdf_map/local_map_margin", mp.local_map_margin_);
-  this->get_parameter("sdf_map/ground_height", mp.ground_height_);
+  this->get_parameter("sdf_map.frame_id", mp.frame_id_);
+  this->get_parameter("sdf_map.local_bound_inflate", mp.local_bound_inflate_);
+  this->get_parameter("sdf_map.local_map_margin", mp.local_map_margin_);
+  this->get_parameter("sdf_map.ground_height", mp.ground_height_);
+
+  /* kinodynamic astar params */
+  KinodynamicAstarParams kap;
+  this->declare_parameter("search.max_tau", -1.0);
+  this->declare_parameter("search.init_max_tau", -1.0);
+  this->declare_parameter("search.max_vel", -1.0);
+  this->declare_parameter("search.max_acc", -1.0);
+  this->declare_parameter("search.w_time", -1.0);
+  this->declare_parameter("search.horizon", -1.0);
+  this->declare_parameter("search.resolution_astar", -1.0);
+  this->declare_parameter("search.time_resolution", -1.0);
+  this->declare_parameter("search.lambda_heu", -1.0);
+  this->declare_parameter("search.allocate_num", -1);
+  this->declare_parameter("search.check_num", -1);
+  this->declare_parameter("search.optimistic", true);
+  this->declare_parameter("search.vel_margin", vel_margin, 0.0);
+
+  this->get_parameter("search.max_tau", kap.max_tau);
+  this->get_parameter("search.init_max_tau", kap.init_max_tau);
+  this->get_parameter("search.max_vel", kap.max_vel);
+  this->get_parameter("search.max_acc", kap.max_acc);
+  this->get_parameter("search.w_time", kap.w_time);
+  this->get_parameter("search.horizon", kap.horizon);
+  this->get_parameter("search.resolution_astar", kap.resolution);
+  this->get_parameter("search.time_resolution", kap.time_resolution);
+  this->get_parameter("search.lambda_heu", kap.lambda_heu);
+  this->get_parameter("search.allocate_num", kap.allocate_num);
+  this->get_parameter("search.check_num", kap.check_num);
+  this->get_parameter("search.optimistic", kap.optimistic);
+  this->get_parameter("search.vel_margin", vel_margin);
+
 
   // Create a timer to execute the FSM callback every 100 milliseconds
   exec_timer_ = this->create_wall_timer(
@@ -333,7 +363,7 @@ depth_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/dep
 
   /* initialize main modules */
   planner_manager_.reset(new FastPlannerManager);
-  planner_manager_->initPlanModules(pp, mp, use_geometric_path, use_kinodynamic_path, use_topo_path,
+  planner_manager_->initPlanModules(pp, mp, kap, use_geometric_path, use_kinodynamic_path, use_topo_path,
                                     use_optimization);
   visualization_.reset(new PlanningVisualization(nh));
 

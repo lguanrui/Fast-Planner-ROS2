@@ -321,24 +321,24 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   return NO_PATH;
 }
 
-void KinodynamicAstar::setParam(ros::NodeHandle& nh)
+void KinodynamicAstar::setParam(KinodynamicAstarParams& kap)
 {
-  nh.param("search/max_tau", max_tau_, -1.0);
-  nh.param("search/init_max_tau", init_max_tau_, -1.0);
-  nh.param("search/max_vel", max_vel_, -1.0);
-  nh.param("search/max_acc", max_acc_, -1.0);
-  nh.param("search/w_time", w_time_, -1.0);
-  nh.param("search/horizon", horizon_, -1.0);
-  nh.param("search/resolution_astar", resolution_, -1.0);
-  nh.param("search/time_resolution", time_resolution_, -1.0);
-  nh.param("search/lambda_heu", lambda_heu_, -1.0);
-  nh.param("search/allocate_num", allocate_num_, -1);
-  nh.param("search/check_num", check_num_, -1);
-  nh.param("search/optimistic", optimistic_, true);
+  max_tau_ = kap.max_tau;
+  init_max_tau_ = kap.init_max_tau;
+  max_vel_ = kap.max_vel;
+  max_acc_ = kap.max_acc;
+  w_time_ = kap.w_time;
+  horizon_ = kap.horizon;
+  resolution_ = kap.resolution;
+  time_resolution_ = kap.time_resolution;
+  lambda_heu_ = kap.lambda_heu;
+  allocate_num_ = kap.allocate_num;
+  check_num_ = kap.check_num;
+  optimistic_ = kap.optimistic;
+
   tie_breaker_ = 1.0 + 1.0 / 10000;
 
-  double vel_margin;
-  nh.param("search/vel_margin", vel_margin, 0.0);
+  double vel_margin = kap.vel_margin;
   max_vel_ += vel_margin;
 }
 
