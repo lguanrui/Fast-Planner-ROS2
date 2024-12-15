@@ -77,6 +77,7 @@ struct MappingParameters {
   Eigen::Vector3d local_update_range_;
   double resolution_, resolution_inv_;
   double obstacles_inflation_;
+  double x_size_, y_size_, z_size_;
   string frame_id_;
   int pose_type_;
   string map_input_;  // 1: pose+depth; 2: odom + cloud
@@ -205,16 +206,16 @@ public:
   void getSliceESDF(const double height, const double res, const Eigen::Vector4d& range,
                     vector<Eigen::Vector3d>& slice, vector<Eigen::Vector3d>& grad,
                     int sign = 1);  // 1 pos, 2 neg, 3 combined
-  void initMap(MappingParameters mp);
+  void initMap(MappingParameters& mp);
 
   // get depth image and camera pose
   //void depthPoseCallback(const sensor_msgs::msg::Image::ConstSharedPtr img,
   //                       const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose);
   void depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr img, const nav_msgs::msg::Odometry::ConstSharedPtr odom);
-  void depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr img);
-  void cloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr img);
-  void poseCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose);
-  void odomCallback(const nav_msgs::msg::Odometry::ConstSharedPtr odom);
+  //void depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr img);
+  void cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr img);
+  void poseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose);
+  void odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom);
 
   // update occupancy by raycasting, and update ESDF
   void updateOccupancyCallback();

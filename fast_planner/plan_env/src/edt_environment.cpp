@@ -36,15 +36,15 @@ void EDTEnvironment::setMap(shared_ptr<SDFMap> map) {
   resolution_inv_ = 1 / sdf_map_->getResolution();
 }
 
-void EDTEnvironment::setObjPrediction(ObjPrediction prediction) {
+/*void EDTEnvironment::setObjPrediction(ObjPrediction prediction) {
   this->obj_prediction_ = prediction;
 }
 
 void EDTEnvironment::setObjScale(ObjScale scale) {
   this->obj_scale_ = scale;
-}
+}*/
 
-double EDTEnvironment::distToBox(int idx, const Eigen::Vector3d& pos, const double& time) {
+/*double EDTEnvironment::distToBox(int idx, const Eigen::Vector3d& pos, const double& time) {
   // Eigen::Vector3d pos_box = obj_prediction_->at(idx).evaluate(time);
   Eigen::Vector3d pos_box = obj_prediction_->at(idx).evaluateConstVel(time);
 
@@ -59,9 +59,9 @@ double EDTEnvironment::distToBox(int idx, const Eigen::Vector3d& pos, const doub
   }
 
   return dist.norm();
-}
+}*/
 
-double EDTEnvironment::minDistToAllBox(const Eigen::Vector3d& pos, const double& time) {
+/*double EDTEnvironment::minDistToAllBox(const Eigen::Vector3d& pos, const double& time) {
   double dist = 10000000.0;
   for (int i = 0; i < obj_prediction_->size(); i++) {
     double di = distToBox(i, pos, time);
@@ -69,7 +69,7 @@ double EDTEnvironment::minDistToAllBox(const Eigen::Vector3d& pos, const double&
   }
 
   return dist;
-}
+}*/
 
 void EDTEnvironment::getSurroundDistance(Eigen::Vector3d pts[2][2][2], double dists[2][2][2]) {
   for (int x = 0; x < 2; x++) {
@@ -122,8 +122,10 @@ double EDTEnvironment::evaluateCoarseEDT(Eigen::Vector3d& pos, double time) {
   if (time < 0.0) {
     return d1;
   } else {
-    double d2 = minDistToAllBox(pos, time);
-    return min(d1, d2);
+    //TODO: Guanrui: add dynamic obstacles prediction later
+    //double d2 = minDistToAllBox(pos, time);
+    //return min(d1, d2);
+    return d1;
   }
 }
 

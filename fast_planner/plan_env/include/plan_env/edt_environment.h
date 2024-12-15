@@ -30,7 +30,7 @@
 #include <iostream>
 #include <utility>
 
-#include <plan_env/obj_predictor.h>
+//#include <plan_env/obj_predictor.h>
 #include <plan_env/sdf_map.h>
 
 using std::cout;
@@ -45,11 +45,11 @@ namespace fast_planner {
 class EDTEnvironment {
 private:
   /* data */
-  ObjPrediction obj_prediction_;
-  ObjScale obj_scale_;
+  //ObjPrediction obj_prediction_;
+  //ObjScale obj_scale_;
   double resolution_inv_;
-  double distToBox(int idx, const Eigen::Vector3d& pos, const double& time);
-  double minDistToAllBox(const Eigen::Vector3d& pos, const double& time);
+  //double distToBox(int idx, const Eigen::Vector3d& pos, const double& time);
+  //double minDistToAllBox(const Eigen::Vector3d& pos, const double& time);
 
 public:
   EDTEnvironment(/* args */) {
@@ -61,8 +61,8 @@ public:
 
   void init();
   void setMap(SDFMap::Ptr map);
-  void setObjPrediction(ObjPrediction prediction);
-  void setObjScale(ObjScale scale);
+  //void setObjPrediction(ObjPrediction prediction);
+  //void setObjScale(ObjScale scale);
   void getSurroundDistance(Eigen::Vector3d pts[2][2][2], double dists[2][2][2]);
   void interpolateTrilinear(double values[2][2][2], const Eigen::Vector3d& diff,
                             double& value, Eigen::Vector3d& grad);

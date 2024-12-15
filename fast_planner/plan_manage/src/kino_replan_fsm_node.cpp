@@ -37,7 +37,7 @@
 #include <bspline_opt/bspline_optimizer.h>
 #include <path_searching/kinodynamic_astar.h>
 #include <plan_env/edt_environment.h>
-#include <plan_env/obj_predictor.h>
+//#include <plan_env/obj_predictor.h>
 #include <plan_env/sdf_map.h>
 #include <plan_manage/Bspline.h>
 #include <plan_manage/planner_manager.h>
@@ -223,9 +223,9 @@ void KinoReplanFSM::init() {
   this->declare_parameter("sdf_map.ground_height", 1.0);
 
   this->get_parameter("sdf_map.resolution", mp.resolution_);
-  this->get_parameter("sdf_map.map_size_x", x_size);
-  this->get_parameter("sdf_map.map_size_y", y_size);
-  this->get_parameter("sdf_map.map_size_z", z_size);
+  this->get_parameter("sdf_map.map_size_x", mp.x_size);
+  this->get_parameter("sdf_map.map_size_y", mp.y_size);
+  this->get_parameter("sdf_map.map_size_z", mp.z_size);
   this->get_parameter("sdf_map.local_update_range_x", mp.local_update_range_(0));
   this->get_parameter("sdf_map.local_update_range_y", mp.local_update_range_(1));
   this->get_parameter("sdf_map.local_update_range_z", mp.local_update_range_(2));
@@ -325,20 +325,6 @@ void KinoReplanFSM::init() {
   depth_odom_sync->registerCallback(std::bind(&KinoReplanFSM::depthOdomCallback, this, std::placeholders::_1, std::placeholders::_2, 0, 1));
 
 // use odometry and point cloud
-// indep_cloud_sub_ = node_.subscribe<sensor_msgs::PointCloud2>("/sdf_map/cloud", 10, &SDFMap::cloudCallback, this);
-
-// occ_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::updateOccupancyCallback, this);
-// esdf_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::updateESDFCallback, this);
-// vis_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::visCallback, this);
-
-// map_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/occupancy", 10);
-// map_inf_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/occupancy_inflate", 10);
-// esdf_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/esdf", 10);
-// update_range_pub_ = node_.advertise<visualization_msgs::Marker>("/sdf_map/update_range", 10);
-
-// unknown_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/unknown", 10);
-// depth_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/depth_cloud", 10);
-
 indep_cloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "/sdf_map/cloud", 10, std::bind(&KinoReplanFSM::cloudCallback, this, std::placeholders::_1));
 
@@ -436,6 +422,8 @@ void KinoReplanFSM::odometryCallback(const nav_msgs::msg::Odometry::SharedPtr ms
   odom_orient_.x() = msg->pose.pose.orientation.x;
   odom_orient_.y() = msg->pose.pose.orientation.y;
   odom_orient_.z() = msg->pose.pose.orientation.z;
+
+  plan_manager_->sdf_map_->odomCallback(msg);
 
   have_odom_ = true;
 }

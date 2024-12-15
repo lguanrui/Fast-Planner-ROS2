@@ -30,6 +30,9 @@
 
 void SDFMap::initMap(MappingParameters& mp) {
   mp_ = mp;
+  double x_size = mp_.x_size_;
+  double y_size = mp_.y_size_;
+  double z_size = mp_.z_size_;
   mp_.local_bound_inflate_ = max(mp_.resolution_, mp_.local_bound_inflate_);
   mp_.resolution_inv_ = 1 / mp_.resolution_;
   mp_.map_origin_ = Eigen::Vector3d(-x_size / 2.0, -y_size / 2.0, mp_.ground_height_);
@@ -251,7 +254,7 @@ void SDFMap::updateESDF3d() {
         } else if (md_.occupancy_buffer_inflate_[idx] == 1) {
           md_.occupancy_buffer_neg[idx] = 0;
         } else {
-          ROS_ERROR("what?");
+            std::cout << "\033[31m[sdfmap]: what?\033[0m" << std::endl;
         }
       }
 
@@ -764,35 +767,35 @@ void SDFMap::updateESDFCallback() {
     md_.esdf_need_update_ = false;
 }
 
-void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
-                               const geometry_msgs::PoseStampedConstPtr& pose) {
-  /* get depth image */
-  cv_bridge::CvImagePtr cv_ptr;
-  cv_ptr = cv_bridge::toCvCopy(img, img->encoding);
+// void SDFMap::depthPoseCallback(const sensor_msgs::msg::Image::SharedPtr img,
+//                                const geometry_msgs::msg::PoseStamped::SharedPtr pose) {
+//  /* get depth image */
+//   cv_bridge::CvImagePtr cv_ptr;
+//   cv_ptr = cv_bridge::toCvCopy(img, img->encoding);
 
-  if (img->encoding == sensor_msgs::image_encodings::TYPE_32FC1) {
-    (cv_ptr->image).convertTo(cv_ptr->image, CV_16UC1, mp_.k_depth_scaling_factor_);
-  }
-  cv_ptr->image.copyTo(md_.depth_image_);
+//   if (img->encoding == sensor_msgs::image_encodings::TYPE_32FC1) {
+//     (cv_ptr->image).convertTo(cv_ptr->image, CV_16UC1, mp_.k_depth_scaling_factor_);
+//   }
+//   cv_ptr->image.copyTo(md_.depth_image_);
 
-  // std::cout << "depth: " << md_.depth_image_.cols << ", " << md_.depth_image_.rows << std::endl;
+//   // std::cout << "depth: " << md_.depth_image_.cols << ", " << md_.depth_image_.rows << std::endl;
 
-  /* get pose */
-  md_.camera_pos_(0) = pose->pose.position.x;
-  md_.camera_pos_(1) = pose->pose.position.y;
-  md_.camera_pos_(2) = pose->pose.position.z;
-  md_.camera_q_ = Eigen::Quaterniond(pose->pose.orientation.w, pose->pose.orientation.x,
-                                     pose->pose.orientation.y, pose->pose.orientation.z);
-  if (isInMap(md_.camera_pos_)) {
-    md_.has_odom_ = true;
-    md_.update_num_ += 1;
-    md_.occ_need_update_ = true;
-  } else {
-    md_.occ_need_update_ = false;
-  }
-}
+//   /* get pose */
+//   md_.camera_pos_(0) = pose->pose.position.x;
+//   md_.camera_pos_(1) = pose->pose.position.y;
+//   md_.camera_pos_(2) = pose->pose.position.z;
+//   md_.camera_q_ = Eigen::Quaterniond(pose->pose.orientation.w, pose->pose.orientation.x,
+//                                      pose->pose.orientation.y, pose->pose.orientation.z);
+//   if (isInMap(md_.camera_pos_)) {
+//     md_.has_odom_ = true;
+//     md_.update_num_ += 1;
+//     md_.occ_need_update_ = true;
+//   } else {
+//     md_.occ_need_update_ = false;
+//   }
+// }
 
-void SDFMap::odomCallback(const nav_msgs::OdometryConstPtr& odom) {
+void SDFMap::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom) {
   if (md_.has_first_depth_) return;
 
   md_.camera_pos_(0) = odom->pose.pose.position.x;
@@ -895,7 +898,7 @@ void SDFMap::cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr img) {
   md_.esdf_need_update_ = true;
 }
 
-sensor_msgs::PointCloud2 SDFMap::publishMap() {
+sensor_msgs::msg::PointCloud2 SDFMap::publishMap() {
   // pcl::PointXYZ pt;
   // pcl::PointCloud<pcl::PointXYZ> cloud;
 
@@ -1252,16 +1255,16 @@ void SDFMap::depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr img
   md_.occ_need_update_ = true;
 }
 
-void SDFMap::depthCallback(const sensor_msgs::ImageConstPtr& img) {
+/*void SDFMap::depthCallback(const sensor_msgs::ImageConstPtr& img) {
   std::cout << "depth: " << img->header.stamp << std::endl;
-}
+}*/
 
-void SDFMap::poseCallback(const geometry_msgs::PoseStampedConstPtr& pose) {
+/*void SDFMap::poseCallback(const geometry_msgs::PoseStampedConstPtr& pose) {
   std::cout << "pose: " << pose->header.stamp << std::endl;
 
   md_.camera_pos_(0) = pose->pose.position.x;
   md_.camera_pos_(1) = pose->pose.position.y;
   md_.camera_pos_(2) = pose->pose.position.z;
-}
+}*/
 
 // SDFMap
