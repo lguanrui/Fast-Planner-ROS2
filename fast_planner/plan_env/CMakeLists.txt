@@ -50,7 +50,7 @@ add_library(plan_env SHARED
 )
 ament_target_dependencies(plan_env ${dependencies})
 target_link_libraries(plan_env ${PCL_LIBRARIES})
-#ament_export_targets(plan_env HAS_LIBRARY_TARGET)
+ament_export_targets(plan_env HAS_LIBRARY_TARGET)
 
 #add_executable(obj_generator src/obj_generator.cpp)
 #ament_target_dependencies(obj_generator ${dependencies})
@@ -61,9 +61,10 @@ ament_export_dependencies(${dependencies})
 
 install(DIRECTORY include/ DESTINATION include)
 install(TARGETS plan_env 
+    EXPORT plan_env
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
     INCLUDES DESTINATION include
 )
 
