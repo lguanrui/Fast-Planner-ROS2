@@ -8,7 +8,7 @@
 
   <license>BSD</license>
 
-  <author email="lguanrui@nyu.edu">Guanrui Li</author>
+  <author email="lguanrui.github@gmail.com">Guanrui Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>

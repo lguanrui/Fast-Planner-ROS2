@@ -40,8 +40,6 @@ include_directories(
     ${OpenCV_INCLUDE_DIRS}
 )
 
-link_directories(${PCL_LIBRARY_DIRS})
-
 add_library(plan_env SHARED
     src/sdf_map.cpp 
     #src/obj_predictor.cpp 
