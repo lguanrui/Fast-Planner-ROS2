@@ -1,46 +1,56 @@
-cmake_minimum_required(VERSION 2.8.3)
+# Minimum CMake version required
+cmake_minimum_required(VERSION 3.8)
+
+# Project name
 project(bspline_opt)
 
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-std=c++11")
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
+# Set CMake policy
+cmake_policy(SET CMP0069 NEW)
 
+# Set C++ standard to C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Enable compile optimizations
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fsee -fomit-frame-pointer -fno-signed-zeros -fno-math-errno -funroll-loops")
+
+# Find required packages
+find_package(ament_cmake REQUIRED)
+find_package(plan_env REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.7 REQUIRED)
-
 set(NLOPT_INCLUDE_DIR "/usr/local/include")  
 set(NLOPT_LIBRARY "/usr/local/lib/libnlopt.so")  
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  visualization_msgs
-  cv_bridge
-  plan_env
+# List of dependencies
+set(dependencies 
+    plan_env
+    Eigen3
 )
 
-catkin_package(
- INCLUDE_DIRS include
- LIBRARIES bspline_opt
- CATKIN_DEPENDS plan_env
-#  DEPENDS system_lib
+# Include directories
+include_directories(include ${EIGEN3_INCLUDE_DIR} ${NLOPT_INCLUDE_DIR})
+
+# Add library target
+add_library(bspline_opt SHARED src/bspline_optimizer.cpp)
+
+# Link dependencies to the target
+ament_target_dependencies(bspline_opt ${dependencies})
+target_link_libraries(bspline_opt ${NLOPT_LIBRARY})
+
+# Install the library
+install(
+    TARGETS bspline_opt
+    EXPORT bspline_opt
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+    INCLUDES DESTINATION include
 )
 
-include_directories( 
-    SYSTEM 
-    include 
-    ${catkin_INCLUDE_DIRS}
-    ${Eigen3_INCLUDE_DIRS} 
-    ${PCL_INCLUDE_DIRS}
-    ${NLOPT_INCLUDE_DIR}  
-)
+# Export include directories and dependencies
+ament_export_include_directories(include)
+ament_export_dependencies(${dependencies})
 
-add_library( bspline_opt 
-    src/bspline_optimizer.cpp 
-    )
-target_link_libraries( bspline_opt
-    ${catkin_LIBRARIES} 
-    ${NLOPT_LIBRARY}   
-    )
+# Package the project
+ament_package()

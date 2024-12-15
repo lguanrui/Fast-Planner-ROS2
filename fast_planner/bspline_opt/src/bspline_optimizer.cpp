@@ -21,8 +21,6 @@
 * along with Fast-Planner. If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
 #include "bspline_opt/bspline_optimizer.h"
 #include <nlopt.hpp>
 // using namespace std;
@@ -40,35 +38,31 @@ const int BsplineOptimizer::GUIDE_PHASE = BsplineOptimizer::SMOOTHNESS | Bspline
 const int BsplineOptimizer::NORMAL_PHASE =
     BsplineOptimizer::SMOOTHNESS | BsplineOptimizer::DISTANCE | BsplineOptimizer::FEASIBILITY;
 
-void BsplineOptimizer::setParam(ros::NodeHandle& nh) {
-  nh.param("optimization/lambda1", lambda1_, -1.0);
-  nh.param("optimization/lambda2", lambda2_, -1.0);
-  nh.param("optimization/lambda3", lambda3_, -1.0);
-  nh.param("optimization/lambda4", lambda4_, -1.0);
-  nh.param("optimization/lambda5", lambda5_, -1.0);
-  nh.param("optimization/lambda6", lambda6_, -1.0);
-  nh.param("optimization/lambda7", lambda7_, -1.0);
-  nh.param("optimization/lambda8", lambda8_, -1.0);
+void BsplineOptimizer::setParam(const OptimizationParams& params) {
+  lambda1_ = params.lambda1;
+  lambda2_ = params.lambda2;
+  lambda3_ = params.lambda3;
+  lambda4_ = params.lambda4;
+  lambda5_ = params.lambda5;
+  lambda6_ = params.lambda6;
+  lambda7_ = params.lambda7;
+  lambda8_ = params.lambda8;
 
-  nh.param("optimization/dist0", dist0_, -1.0);
-  nh.param("optimization/max_vel", max_vel_, -1.0);
-  nh.param("optimization/max_acc", max_acc_, -1.0);
-  nh.param("optimization/visib_min", visib_min_, -1.0);
-  nh.param("optimization/dlmin", dlmin_, -1.0);
-  nh.param("optimization/wnl", wnl_, -1.0);
+  dist0_ = params.dist0;
+  max_vel_ = params.max_vel;
+  max_acc_ = params.max_acc;
+  visib_min_ = params.visib_min;
+  dlmin_ = params.dlmin;
+  wnl_ = params.wnl;
 
-  nh.param("optimization/max_iteration_num1", max_iteration_num_[0], -1);
-  nh.param("optimization/max_iteration_num2", max_iteration_num_[1], -1);
-  nh.param("optimization/max_iteration_num3", max_iteration_num_[2], -1);
-  nh.param("optimization/max_iteration_num4", max_iteration_num_[3], -1);
-  nh.param("optimization/max_iteration_time1", max_iteration_time_[0], -1.0);
-  nh.param("optimization/max_iteration_time2", max_iteration_time_[1], -1.0);
-  nh.param("optimization/max_iteration_time3", max_iteration_time_[2], -1.0);
-  nh.param("optimization/max_iteration_time4", max_iteration_time_[3], -1.0);
+  for (int i = 0; i < 4; ++i) {
+    max_iteration_num_[i] = params.max_iteration_num[i];
+    max_iteration_time_[i] = params.max_iteration_time[i];
+  }
 
-  nh.param("optimization/algorithm1", algorithm1_, -1);
-  nh.param("optimization/algorithm2", algorithm2_, -1);
-  nh.param("optimization/order", order_, -1);
+  algorithm1_ = params.algorithm1;
+  algorithm2_ = params.algorithm2;
+  order_ = params.order;
 }
 
 void BsplineOptimizer::setEnvironment(const EDTEnvironment::Ptr& env) {
@@ -99,7 +93,7 @@ void BsplineOptimizer::setCostFunction(const int& cost_code) {
   if (cost_function_ & GUIDE) cost_str += " guide |";
   if (cost_function_ & WAYPOINTS) cost_str += " waypt |";
 
-  ROS_INFO_STREAM("cost func: " << cost_str);
+  std::cout << "cost func: " << cost_str << std::endl;
 }
 
 void BsplineOptimizer::setGuidePath(const vector<Eigen::Vector3d>& guide_pt) { guide_pts_ = guide_pt; }
@@ -183,7 +177,7 @@ void BsplineOptimizer::optimize() {
     /* retrieve the optimization result */
     // cout << "Min cost:" << min_cost_ << endl;
   } catch (std::exception& e) {
-    ROS_WARN("[Optimization]: nlopt exception");
+    std::cout << "\033[1;33m[Optimization]: nlopt exception\033[0m" << std::endl;
     cout << e.what() << endl;
   }
 
@@ -194,7 +188,7 @@ void BsplineOptimizer::optimize() {
     }
   }
 
-  if (!(cost_function_ & GUIDE)) ROS_INFO_STREAM("iter num: " << iter_num_);
+  if (!(cost_function_ & GUIDE)) std::cout << "iter num: " << iter_num_ << std::endl;
 }
 
 void BsplineOptimizer::calcSmoothnessCost(const vector<Eigen::Vector3d>& q, double& cost,

@@ -28,7 +28,6 @@
 
 #include <Eigen/Eigen>
 #include <plan_env/edt_environment.h>
-#include <ros/ros.h>
 
 // Gradient and elasitc band optimization
 
@@ -52,9 +51,34 @@ public:
   BsplineOptimizer() {}
   ~BsplineOptimizer() {}
 
+  struct OptimizationParams {
+  double lambda1;
+  double lambda2;
+  double lambda3;
+  double lambda4;
+  double lambda5;
+  double lambda6;
+  double lambda7;
+  double lambda8;
+
+  double dist0;
+  double max_vel;
+  double max_acc;
+  double visib_min;
+  double dlmin;
+  double wnl;
+
+  int max_iteration_num[4];
+  double max_iteration_time[4];
+
+  int algorithm1;
+  int algorithm2;
+  int order;
+  };
+
   /* main API */
-  void            setEnvironment(const EDTEnvironment::Ptr& env);
-  void            setParam(ros::NodeHandle& nh);
+  void setEnvironment(const EDTEnvironment::Ptr& env);
+  void setParam(const OptimizationParams& params);
   Eigen::MatrixXd BsplineOptimizeTraj(const Eigen::MatrixXd& points, const double& ts,
                                       const int& cost_function, int max_num_id, int max_time_id);
 
@@ -161,7 +185,7 @@ private:
 public:
   vector<double> vec_cost_;
   vector<double> vec_time_;
-  ros::Time      time_start_;
+  //ros::Time      time_start_;
 
   void getCostCurve(vector<double>& cost, vector<double>& time) {
     cost = vec_cost_;
