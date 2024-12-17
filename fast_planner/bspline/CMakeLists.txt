@@ -11,6 +11,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") #C++ compi
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall")
 # Enable debug flags (use if you want to debug in gdb)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -Wall -Wuninitialized -fno-omit-frame-pointer")
 
@@ -19,15 +20,19 @@ find_package(Eigen3 REQUIRED)
 
 set(dependencies
     Eigen3
-    )
+)
+
 include_directories(include ${EIGEN3_INCLUDE_DIR})
 
 add_library(bspline SHARED src/non_uniform_bspline.cpp)
 ament_target_dependencies(bspline ${dependencies})
 ament_export_targets(bspline HAS_LIBRARY_TARGET)
 
-install(
-  TARGETS bspline 
+ament_export_include_directories(include)
+ament_export_dependencies(${dependencies})
+
+install(DIRECTORY include/ DESTINATION include)
+install(TARGETS bspline 
   EXPORT bspline 
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

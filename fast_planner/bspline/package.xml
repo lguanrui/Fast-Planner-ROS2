@@ -12,6 +12,7 @@
   <license>TODO</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>Eigen3</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

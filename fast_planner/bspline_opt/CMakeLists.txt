@@ -37,8 +37,13 @@ add_library(bspline_opt SHARED src/bspline_optimizer.cpp)
 # Link dependencies to the target
 ament_target_dependencies(bspline_opt ${dependencies})
 target_link_libraries(bspline_opt ${NLOPT_LIBRARY})
+ament_export_targets(bspline_opt HAS_LIBRARY_TARGET)
+
+ament_export_include_directories(include)
+ament_export_dependencies(${dependencies})
 
 # Install the library
+install(DIRECTORY include/ DESTINATION include)
 install(
     TARGETS bspline_opt
     EXPORT bspline_opt
