@@ -103,6 +103,14 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub_, esdf_pub_, map_inf_pub_, update_range_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr unknown_pub_, depth_pub_;
 
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr traj_pub_;      // 0
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr topo_pub_;      // 1
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr predict_pub_;   // 2
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr visib_pub_;     // 3, visibility constraints
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr frontier_pub_;  // 4, frontier searching
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr yaw_pub_;       // 5, yaw trajectory
+  std::vector<rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr> vis_pubs_;  //
+
   //void publishESDF();
   //void publishUpdateRange();
   //void publishUnknown();
@@ -115,6 +123,10 @@ private:
                                        // optimization; 1: new, 2: replan
   void changeFSMExecState(FSM_EXEC_STATE new_state, std::string pos_call);
   void printFSMExecState();
+  void visGeometricPath(const vector<Eigen::Vector3d>& path, double resolution,
+                                              const Eigen::Vector4d& color, int id=0);
+  void visBspline(const Bspline& bspline, double size, const Eigen::Vector4d& color, int id=0);
+  void visGoal(const Eigen::Vector3d& goal, double resolution, const Eigen::Vector4d& color, int id=0);
 
   /* ROS2 functions */
   void execFSMCallback();
@@ -345,6 +357,24 @@ update_range_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/sd
 unknown_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/unknown", 10);
 depth_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/depth_cloud", 10);
 
+traj_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/trajectory", 20);
+pubs_.push_back(traj_pub_);
+
+topo_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/topo_path", 20);
+pubs_.push_back(topo_pub_);
+
+predict_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/prediction", 20);
+pubs_.push_back(predict_pub_);
+
+visib_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/visib_constraint", 20);
+pubs_.push_back(visib_pub_);
+
+frontier_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/frontier", 20);
+pubs_.push_back(frontier_pub_);
+
+yaw_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/yaw", 20);
+pubs_.push_back(yaw_pub_); 
+
   // Create a publisher for the "new" topic to signal new events
 
   /* initialize main modules */
@@ -398,7 +428,7 @@ void KinoReplanFSM::waypointCallback(const nav_msgs::msg::Path::SharedPtr msg) {
     current_wp_ = (current_wp_ + 1) % waypoint_num_;
   }
 
-  visualization_->drawGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
+  visGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
   end_vel_.setZero();
   have_target_ = true;
 
@@ -628,6 +658,58 @@ void KinoReplanFSM::checkCollisionCallback() {
   }
 }
 
+void KinoReplanFSM::visGeometricPath(const vector<Eigen::Vector3d>& path, double resolution,
+                                              const Eigen::Vector4d& color, int id) {
+  // Delete the previous path
+  visualization_msgs::msg::Marker mk = visualization_->deleteSphereList(id);
+  mk.header.stamp = this->now(); 
+  vis_pubs_[0].publish(mk);
+
+  // Draw the new path
+  visualization_msgs::msg::Marker path_marker;
+  path_marker = visualization_->displaySphereList(path, resolution, color, PATH + id % 100);
+  path_marker.header.stamp = this->now();
+  vis_pubs_[0].publish(path_marker);
+}
+
+void KinoReplanFSM::visBspline(const Bspline& bspline, double size, const Eigen::Vector4d& color, int id) {
+  // If the bspline is empty, return
+  if (bspline.getControlPoint().size() == 0) return;
+
+  // Evaluate the bspline
+  vector<Eigen::Vector3d> traj_pts;
+  double                  tm, tmp;
+  bspline.getTimeSpan(tm, tmp);
+
+  for (double t = tm; t <= tmp; t += 0.01) {
+    Eigen::Vector3d pt = bspline.evaluateDeBoor(t);
+    traj_pts.push_back(pt);
+  }
+
+  // Delete the previous bspline
+  visualization_msgs::msg::Marker mk = visualization_->deleteBspline(id);
+  mk.header.stamp = this->now();
+  vis_pubs_[0].publish(mk);
+
+  // Draw the new bspline
+  visualization_msgs::msg::Marker bspline_marker;
+  bspline_marker = visualization_->displaySphereList(traj_pts, size, color, BSPLINE + id1 % 100);
+  // bspline_marker = displayBspline(bspline, size, color, id);
+  bspline_marker.header.stamp = this->now();
+  vis_pubs_[0].publish(bspline_marker);
+}
+
+void KinoReplanFSM::visGoal(const Eigen::Vector3d& goal, double size, const Eigen::Vector4d& color, int id) {
+  visualization_msgs::msg::Marker mk = visualization_->deleteSphereList(GOAL + id % 100);
+  mk.header.stamp = this->now();
+  vis_pubs_[0].publish(mk);
+
+  visualization_msgs::msg::Marker goal_marker;
+  goal_marker = visualization_->displaySphereList(goal_vec, resolution, color, GOAL + id % 100);
+  goal_marker.header.stamp = this->now();
+  vis_pubs_[0].publish(goal_marker);
+}
+
 bool KinoReplanFSM::callKinodynamicReplan() {
   bool plan_success =
       planner_manager_->kinodynamicReplan(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_);
@@ -670,8 +752,9 @@ bool KinoReplanFSM::callKinodynamicReplan() {
 
     /* visulization */
     auto plan_data = &planner_manager_->plan_data_;
-    visualization_->drawGeometricPath(plan_data->kino_path_, 0.075, Eigen::Vector4d(1, 1, 0, 0.4));
-    visualization_->drawBspline(info->position_traj_, 0.1, Eigen::Vector4d(1.0, 0, 0.0, 1), true, 0.2,
+    //visualization_->drawGeometricPath(plan_data->kino_path_, 0.075, Eigen::Vector4d(1, 1, 0, 0.4));
+    visGeometricPath(plan_data->kino_path_, 0.075, Eigen::Vector4d(0, 1, 0, 0.4), 0);
+    visBspline(info->position_traj_, 0.1, Eigen::Vector4d(1.0, 0, 0.0, 1), true, 0.2,
                                 Eigen::Vector4d(1, 0, 0, 1));
 
     return true;
