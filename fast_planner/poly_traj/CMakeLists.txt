@@ -35,6 +35,7 @@ ament_target_dependencies(poly_traj ${dependencies})
 ament_export_targets(poly_traj HAS_LIBRARY_TARGET)
 
 # Install the library
+install(DIRECTORY include/ DESTINATION include)
 install(
   TARGETS poly_traj
   EXPORT poly_traj
