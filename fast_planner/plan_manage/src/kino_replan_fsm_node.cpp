@@ -39,7 +39,6 @@
 #include <plan_env/edt_environment.h>
 //#include <plan_env/obj_predictor.h>
 #include <plan_env/sdf_map.h>
-#include <plan_manage/Bspline.h>
 #include <plan_manage/planner_manager.h>
 #include <traj_utils/planning_visualization.h>
 

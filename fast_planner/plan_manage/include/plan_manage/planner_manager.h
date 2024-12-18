@@ -29,9 +29,9 @@
 #include <bspline_opt/bspline_optimizer.h>
 #include <bspline/non_uniform_bspline.h>
 
-#include <path_searching/astar.h>
+//#include <path_searching/astar.h>
 #include <path_searching/kinodynamic_astar.h>
-#include <path_searching/topo_prm.h>
+//#include <path_searching/topo_prm.h>
 
 #include <plan_env/edt_environment.h>
 
@@ -77,7 +77,7 @@ private:
 
   unique_ptr<Astar> geo_path_finder_;
   unique_ptr<KinodynamicAstar> kino_path_finder_;
-  unique_ptr<TopologyPRM> topo_prm_;
+  //unique_ptr<TopologyPRM> topo_prm_;
   vector<BsplineOptimizer::Ptr> bspline_optimizers_;
 
   void updateTrajInfo();

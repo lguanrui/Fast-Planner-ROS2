@@ -1,42 +1,28 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>plan_manage</name>
   <version>0.0.0</version>
   <description>The fast_planner package</description>
 
-  <maintainer email="bzhouai@todo.todo">bzhouai</maintainer>
+  <maintainer email="lguanrui.github@gmail.com">Guanrui Li</maintainer>
 
-  <license>TODO</license>
+  <license>BSD</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>message_runtime</build_depend>
-  
-  <build_depend>plan_env</build_depend>
-  <build_depend>path_searching</build_depend>
-  <build_depend>bspline</build_depend>
-  <build_depend>bspline_opt</build_depend>
-  <build_depend>traj_utils</build_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>plan_env</depend>
+  <depend>path_searching</depend>
+  <depend>bspline</depend>
+  <depend>bspline_opt</depend>
+  <depend>traj_utils</depend>
+  <depend>Eigen3</depend>
+  <depend>cv_bridge</depend>
+  <depend>PCL</depend>
 
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
-
-  <exec_depend>plan_env</exec_depend>
-  <exec_depend>path_searching</exec_depend>
-  <exec_depend>bspline</exec_depend>
-  <exec_depend>bspline_opt</exec_depend>
-  <exec_depend>traj_utils</exec_depend>
-  
-
-
-  <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

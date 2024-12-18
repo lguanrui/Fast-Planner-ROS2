@@ -54,7 +54,7 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& 
 
   if (use_kinodynamic_path) {
     kino_path_finder_.reset(new KinodynamicAstar);
-    kino_path_finder_->setParam(nh);
+    kino_path_finder_->setParam(kap);
     kino_path_finder_->setEnvironment(edt_environment_);
     kino_path_finder_->init();
   }
@@ -247,7 +247,7 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 // SECTION topological replanning
 
 bool FastPlannerManager::planGlobalTraj(const Eigen::Vector3d& start_pos) {
-  plan_data_.clearTopoPaths();
+  //plan_data_.clearTopoPaths();
 
   // generate global reference trajectory
 
