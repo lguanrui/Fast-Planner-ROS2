@@ -66,6 +66,7 @@ void NonUniformBspline::getTimeSpan(double& um, double& um_p) {
 }
 
 Eigen::MatrixXd NonUniformBspline::getControlPoint() { return control_points_; }
+const int getControlPointSize() {const int size_of_ctrl_pts = control_points_.size(); return size_of_ctrl_pts;}
 
 pair<Eigen::VectorXd, Eigen::VectorXd> NonUniformBspline::getHeadTailPts() {
   Eigen::VectorXd head = evaluateDeBoor(u_(p_));

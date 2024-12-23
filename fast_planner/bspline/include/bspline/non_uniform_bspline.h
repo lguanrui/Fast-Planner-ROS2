@@ -64,6 +64,7 @@ public:
   void                                   setKnot(const Eigen::VectorXd& knot);
   Eigen::VectorXd                        getKnot();
   Eigen::MatrixXd                        getControlPoint();
+  const int                                    getControlPointSize();           
   double                                 getInterval();
   void                                   getTimeSpan(double& um, double& um_p);
   pair<Eigen::VectorXd, Eigen::VectorXd> getHeadTailPts();
