@@ -40,15 +40,17 @@
 
 using std::vector;
 namespace fast_planner {
+
+enum TRAJECTORY_PLANNING_ID {
+  GOAL = 1,
+  PATH = 200,
+  BSPLINE = 300,
+  BSPLINE_CTRL_PT = 400,
+  POLY_TRAJ = 500
+};
+
 class PlanningVisualization {
 private:
-  enum TRAJECTORY_PLANNING_ID {
-    GOAL = 1,
-    PATH = 200,
-    BSPLINE = 300,
-    BSPLINE_CTRL_PT = 400,
-    POLY_TRAJ = 500
-  };
 
   enum TOPOLOGICAL_PATH_PLANNING_ID {
     GRAPH_NODE = 1,
@@ -116,16 +118,17 @@ public:
 
   void drawTopoPathsPhase1(vector<vector<Eigen::Vector3d>>& paths, double line_width);
   void drawTopoPathsPhase2(vector<vector<Eigen::Vector3d>>& paths, double line_width);
+  */
 
   void drawGoal(Eigen::Vector3d goal, double resolution, const Eigen::Vector4d& color, int id = 0);
-  void drawPrediction(ObjPrediction pred, double resolution, const Eigen::Vector4d& color, int id = 0);
+  //void drawPrediction(ObjPrediction pred, double resolution, const Eigen::Vector4d& color, int id = 0);
 
   Eigen::Vector4d getColor(double h, double alpha = 1.0);
 
   typedef std::shared_ptr<PlanningVisualization> Ptr;
 
   // SECTION developing
-  void drawYawTraj(NonUniformBspline& pos, NonUniformBspline& yaw, const double& dt);
+  /*void drawYawTraj(NonUniformBspline& pos, NonUniformBspline& yaw, const double& dt);
   void drawYawPath(NonUniformBspline& pos, const vector<double>& yaw, const double& dt);*/
 };
 }  // namespace fast_planner

@@ -71,11 +71,12 @@ public:
   MidPlanData plan_data_;
   EDTEnvironment::Ptr edt_environment_;
 
-private:
   /* main planning algorithms & modules */
   SDFMap::Ptr sdf_map_;
 
-  unique_ptr<Astar> geo_path_finder_;
+private:
+
+  //unique_ptr<Astar> geo_path_finder_;
   unique_ptr<KinodynamicAstar> kino_path_finder_;
   //unique_ptr<TopologyPRM> topo_prm_;
   vector<BsplineOptimizer::Ptr> bspline_optimizers_;

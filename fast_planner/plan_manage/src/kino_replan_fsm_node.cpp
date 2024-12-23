@@ -23,12 +23,14 @@
 
 #include <Eigen/Eigen>
 #include <algorithm>
+#include <vector>
 #include <iostream>
+
+#include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/empty.hpp>
-#include <vector>
+#include <fast_planner_msgs/msg/bspline.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -98,8 +100,9 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
 
   rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr replan_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr bspline_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub_, esdf_pub_, map_inf_pub_, update_range_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr update_range_pub_;
+  rclcpp::Publisher<fast_planner_msgs::msg::Bspline>::SharedPtr bspline_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub_, esdf_pub_, map_inf_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr unknown_pub_, depth_pub_;
 
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr traj_pub_;      // 0
@@ -124,7 +127,11 @@ private:
   void printFSMExecState();
   void visGeometricPath(const vector<Eigen::Vector3d>& path, double resolution,
                                               const Eigen::Vector4d& color, int id=0);
-  void visBspline(const Bspline& bspline, double size, const Eigen::Vector4d& color, int id=0);
+  //void visBspline(NonUniformBspline& bspline, double size, const Eigen::Vector4d& color, int id=0);
+  void visBspline(NonUniformBspline& bspline, double size, const Eigen::Vector4d& color,
+                   bool show_ctrl_pts = false, double size2 = 0.1,
+                   const Eigen::Vector4d& color2 = Eigen::Vector4d(1, 1, 0, 1), int id1 = 0,
+                   int id2 = 0);
   void visGoal(const Eigen::Vector3d& goal, double resolution, const Eigen::Vector4d& color, int id=0);
 
   /* ROS2 functions */
@@ -132,6 +139,11 @@ private:
   void checkCollisionCallback();
   void waypointCallback(const nav_msgs::msg::Path::SharedPtr msg);
   void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+  void depthOdomCallback(const sensor_msgs::msg::Image::SharedPtr depth_msg, const nav_msgs::msg::Odometry::SharedPtr odom_msg, int param1, int param2);
+  void cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr cloud_msg);
+  void updateOccupancyCallback();
+  void updateESDFCallback();
+  void visCallback();
 
 };
 
@@ -234,9 +246,9 @@ void KinoReplanFSM::init() {
   this->declare_parameter("sdf_map.ground_height", 1.0);
 
   this->get_parameter("sdf_map.resolution", mp.resolution_);
-  this->get_parameter("sdf_map.map_size_x", mp.x_size);
-  this->get_parameter("sdf_map.map_size_y", mp.y_size);
-  this->get_parameter("sdf_map.map_size_z", mp.z_size);
+  this->get_parameter("sdf_map.map_size_x", mp.x_size_);
+  this->get_parameter("sdf_map.map_size_y", mp.y_size_);
+  this->get_parameter("sdf_map.map_size_z", mp.z_size_);
   this->get_parameter("sdf_map.local_update_range_x", mp.local_update_range_(0));
   this->get_parameter("sdf_map.local_update_range_y", mp.local_update_range_(1));
   this->get_parameter("sdf_map.local_update_range_z", mp.local_update_range_(2));
@@ -290,7 +302,7 @@ void KinoReplanFSM::init() {
   this->declare_parameter("search.allocate_num", -1);
   this->declare_parameter("search.check_num", -1);
   this->declare_parameter("search.optimistic", true);
-  this->declare_parameter("search.vel_margin", vel_margin, 0.0);
+  this->declare_parameter("search.vel_margin", 0.0);
 
   this->get_parameter("search.max_tau", kap.max_tau);
   this->get_parameter("search.init_max_tau", kap.init_max_tau);
@@ -304,7 +316,7 @@ void KinoReplanFSM::init() {
   this->get_parameter("search.allocate_num", kap.allocate_num);
   this->get_parameter("search.check_num", kap.check_num);
   this->get_parameter("search.optimistic", kap.optimistic);
-  this->get_parameter("search.vel_margin", vel_margin);
+  this->get_parameter("search.vel_margin", kap.vel_margin);
 
 
   // Create a timer to execute the FSM callback every 100 milliseconds
@@ -352,27 +364,27 @@ map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/occup
 map_inf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/occupancy_inflate", 10);
 esdf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/esdf", 10);
 update_range_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/sdf_map/update_range", 10);
-
 unknown_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/unknown", 10);
 depth_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/depth_cloud", 10);
+bspline_pub_ = this->create_publisher<fast_planner_msgs::msg::Bspline>("/planning_vis/bspline", 10);
 
-traj_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/trajectory", 20);
-pubs_.push_back(traj_pub_);
+traj_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/trajectory", 20);
+vis_pubs_.push_back(traj_pub_);
 
-topo_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/topo_path", 20);
-pubs_.push_back(topo_pub_);
+topo_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/topo_path", 20);
+vis_pubs_.push_back(topo_pub_);
 
-predict_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/prediction", 20);
-pubs_.push_back(predict_pub_);
+predict_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/prediction", 20);
+vis_pubs_.push_back(predict_pub_);
 
-visib_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/visib_constraint", 20);
-pubs_.push_back(visib_pub_);
+visib_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/visib_constraint", 20);
+vis_pubs_.push_back(visib_pub_);
 
-frontier_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/frontier", 20);
-pubs_.push_back(frontier_pub_);
+frontier_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/frontier", 20);
+vis_pubs_.push_back(frontier_pub_);
 
-yaw_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/yaw", 20);
-pubs_.push_back(yaw_pub_); 
+yaw_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/yaw", 20);
+vis_pubs_.push_back(yaw_pub_);
 
   // Create a publisher for the "new" topic to signal new events
 
@@ -380,7 +392,7 @@ pubs_.push_back(yaw_pub_);
   planner_manager_.reset(new FastPlannerManager);
   planner_manager_->initPlanModules(pp, mp, kap, use_geometric_path, use_kinodynamic_path, use_topo_path,
                                     use_optimization);
-  visualization_.reset(new PlanningVisualization(nh));
+  visualization_.reset(new PlanningVisualization());
 
 }
 
@@ -452,7 +464,7 @@ void KinoReplanFSM::odometryCallback(const nav_msgs::msg::Odometry::SharedPtr ms
   odom_orient_.y() = msg->pose.pose.orientation.y;
   odom_orient_.z() = msg->pose.pose.orientation.z;
 
-  plan_manager_->sdf_map_->odomCallback(msg);
+  planner_manager_->sdf_map_->odomCallback(msg);
 
   have_odom_ = true;
 }
@@ -630,7 +642,8 @@ void KinoReplanFSM::checkCollisionCallback() {
           changeFSMExecState(REPLAN_TRAJ, "SAFETY");
         }
 
-        visualization_->drawGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
+        //visualization_->drawGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
+        visGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
       } else {
         // have_target_ = false;
         // cout << "Goal near collision, stop." << endl;
@@ -660,20 +673,22 @@ void KinoReplanFSM::checkCollisionCallback() {
 void KinoReplanFSM::visGeometricPath(const vector<Eigen::Vector3d>& path, double resolution,
                                               const Eigen::Vector4d& color, int id) {
   // Delete the previous path
-  visualization_msgs::msg::Marker mk = visualization_->deleteSphereList(id);
+  visualization_msgs::msg::Marker mk = visualization_->deleteSphereList(PATH + id % 100);
   mk.header.stamp = this->now(); 
-  vis_pubs_[0].publish(mk);
+  vis_pubs_[0]->publish(mk);
 
   // Draw the new path
   visualization_msgs::msg::Marker path_marker;
   path_marker = visualization_->displaySphereList(path, resolution, color, PATH + id % 100);
   path_marker.header.stamp = this->now();
-  vis_pubs_[0].publish(path_marker);
+  vis_pubs_[0]->publish(path_marker);
 }
 
-void KinoReplanFSM::visBspline(const Bspline& bspline, double size, const Eigen::Vector4d& color, int id) {
+void KinoReplanFSM::visBspline(NonUniformBspline& bspline, double size,
+                                        const Eigen::Vector4d& color, bool show_ctrl_pts, double size2,
+                                        const Eigen::Vector4d& color2, int id1, int id2) {
   // If the bspline is empty, return
-  if (bspline.getControlPoint().size() == 0) return;
+  if (bspline.getControlPointSize() == 0) return;
 
   // Evaluate the bspline
   vector<Eigen::Vector3d> traj_pts;
@@ -686,27 +701,52 @@ void KinoReplanFSM::visBspline(const Bspline& bspline, double size, const Eigen:
   }
 
   // Delete the previous bspline
-  visualization_msgs::msg::Marker mk = visualization_->deleteBspline(id);
-  mk.header.stamp = this->now();
-  vis_pubs_[0].publish(mk);
+  visualization_msgs::msg::Marker del_bsp_mk = visualization_->deleteSphereList(BSPLINE + id1 % 100);
+  del_bsp_mk.header.stamp = this->now();
+  vis_pubs_[0]->publish(del_bsp_mk);
 
   // Draw the new bspline
   visualization_msgs::msg::Marker bspline_marker;
   bspline_marker = visualization_->displaySphereList(traj_pts, size, color, BSPLINE + id1 % 100);
-  // bspline_marker = displayBspline(bspline, size, color, id);
   bspline_marker.header.stamp = this->now();
-  vis_pubs_[0].publish(bspline_marker);
+  vis_pubs_[0]->publish(bspline_marker);
+
+  // draw the control point
+  if (!show_ctrl_pts) return;
+
+  // Get the control points of the bspline
+  Eigen::MatrixXd ctrl_pts = bspline.getControlPoint();
+  vector<Eigen::Vector3d> ctp;
+
+  // Convert the control points to a vector of Eigen::Vector3d
+  for (int i = 0; i < int(ctrl_pts.rows()); ++i) {
+    Eigen::Vector3d pt = ctrl_pts.row(i).transpose();
+    ctp.push_back(pt);
+  }
+
+  // Delete the previous control points visualization
+  visualization_msgs::msg::Marker del_ctp_mk = visualization_->deleteSphereList(BSPLINE_CTRL_PT + id2 % 100);
+  del_ctp_mk.header.stamp = this->now();
+  vis_pubs_[0]->publish(del_ctp_mk);
+
+  // Draw the new control points
+  visualization_msgs::msg::Marker ctrl_pts_marker;
+  ctrl_pts_marker = visualization_->displaySphereList(ctp, size2, color2, BSPLINE_CTRL_PT + id2 % 100);
+  ctrl_pts_marker.header.stamp = this->now();
+  vis_pubs_[0]->publish(ctrl_pts_marker);
+
 }
 
-void KinoReplanFSM::visGoal(const Eigen::Vector3d& goal, double size, const Eigen::Vector4d& color, int id) {
+void KinoReplanFSM::visGoal(const Eigen::Vector3d& goal, double resolution, const Eigen::Vector4d& color, int id) {
   visualization_msgs::msg::Marker mk = visualization_->deleteSphereList(GOAL + id % 100);
   mk.header.stamp = this->now();
-  vis_pubs_[0].publish(mk);
+  vis_pubs_[0]->publish(mk);
 
   visualization_msgs::msg::Marker goal_marker;
+  std::vector<Eigen::Vector3d> goal_vec = { goal };
   goal_marker = visualization_->displaySphereList(goal_vec, resolution, color, GOAL + id % 100);
   goal_marker.header.stamp = this->now();
-  vis_pubs_[0].publish(goal_marker);
+  vis_pubs_[0]->publish(goal_marker);
 }
 
 bool KinoReplanFSM::callKinodynamicReplan() {
@@ -720,7 +760,7 @@ bool KinoReplanFSM::callKinodynamicReplan() {
     auto info = &planner_manager_->local_data_;
 
     /* publish traj */
-    plan_manage::Bspline bspline;
+    fast_planner_msgs::msg::Bspline bspline;
     bspline.order      = 3;
     bspline.start_time = info->start_time_;
     bspline.traj_id    = info->traj_id_;
@@ -728,7 +768,7 @@ bool KinoReplanFSM::callKinodynamicReplan() {
     Eigen::MatrixXd pos_pts = info->position_traj_.getControlPoint();
 
     for (int i = 0; i < pos_pts.rows(); ++i) {
-      geometry_msgs::Point pt;
+      geometry_msgs::msg::Point pt;
       pt.x = pos_pts(i, 0);
       pt.y = pos_pts(i, 1);
       pt.z = pos_pts(i, 2);
@@ -747,7 +787,7 @@ bool KinoReplanFSM::callKinodynamicReplan() {
     }
     bspline.yaw_dt = info->yaw_traj_.getInterval();
 
-    bspline_pub_.publish(bspline);
+    bspline_pub_->publish(bspline);
 
     /* visulization */
     auto plan_data = &planner_manager_->plan_data_;

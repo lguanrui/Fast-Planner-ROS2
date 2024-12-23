@@ -313,18 +313,18 @@ bool FastPlannerManager::planGlobalTraj(const Eigen::Vector3d& start_pos) {
   local_data_.position_traj_ = bspline;
   local_data_.start_time_    = time_now;
   // ROS_INFO("global trajectory generated.");
-  std::cout << "planner_manager: global trajectory generated." << std::endl;
+  std::cout << "[planner_manager]: global trajectory generated." << std::endl;
 
   updateTrajInfo();
 
   return true;
 }
 
-bool FastPlannerManager::topoReplan(bool collide) {
+/*bool FastPlannerManager::topoReplan(bool collide) {
   // ros::Time t1;
   rclcpp::Time t1;
 
-  /* truncate a new local segment for replanning */
+  // truncate a new local segment for replanning 
   // ros::Time time_now = ros::Time::now();
   // double    t_now    = (time_now - global_data_.global_start_time_).toSec();
   rclcpp::Time time_now = rclcpp::Clock().now();
@@ -355,7 +355,7 @@ bool FastPlannerManager::topoReplan(bool collide) {
       NonUniformBspline best_traj;
 
       // local segment is in collision, call topological replanning
-      /* search topological distinctive paths */
+      // search topological distinctive paths 
       std::cout << "planner_manager: [Topo]: ---------" << std::endl;
       plan_data_.clearTopoPaths();
       list<GraphNode::Ptr>            graph;
@@ -369,7 +369,7 @@ bool FastPlannerManager::topoReplan(bool collide) {
       }
       plan_data_.addTopoPaths(graph, raw_paths, filtered_paths, select_paths);
 
-      /* optimize trajectory using different topo paths */
+      // optimize trajectory using different topo paths 
       std::cout << "planner_manager: [Optimize]: ---------" << std::endl;
       t1 = ros::Time::now();
 
@@ -397,7 +397,7 @@ bool FastPlannerManager::topoReplan(bool collide) {
   }
   updateTrajInfo();
   return true;
-}
+}*/
 
 void FastPlannerManager::selectBestTraj(NonUniformBspline& traj) {
   // sort by jerk
@@ -407,7 +407,7 @@ void FastPlannerManager::selectBestTraj(NonUniformBspline& traj) {
   traj = trajs[0];
 }
 
-void FastPlannerManager::refineTraj(NonUniformBspline& best_traj, double& time_inc) {
+/*void FastPlannerManager::refineTraj(NonUniformBspline& best_traj, double& time_inc) {
   ros::Time t1 = ros::Time::now();
   time_inc     = 0.0;
   double    dt, t_inc;
@@ -427,7 +427,7 @@ void FastPlannerManager::refineTraj(NonUniformBspline& best_traj, double& time_i
   best_traj = NonUniformBspline(ctrl_pts, 3, dt);
   ROS_WARN_STREAM("[Refine]: cost " << (ros::Time::now() - t1).toSec()
                                     << " seconds, time change is: " << time_inc);
-}
+}*/
 
 void FastPlannerManager::updateTrajInfo() {
   local_data_.velocity_traj_     = local_data_.position_traj_.getDerivative();
@@ -460,7 +460,7 @@ void FastPlannerManager::reparamBspline(NonUniformBspline& bspline, double ratio
   // ROS_WARN("prev: %d, new: %d", prev_num, ctrl_pts.rows());
 }
 
-void FastPlannerManager::optimizeTopoBspline(double start_t, double duration,
+/*void FastPlannerManager::optimizeTopoBspline(double start_t, double duration,
                                              vector<Eigen::Vector3d> guide_path, int traj_id) {
   ros::Time t1;
   double    tm1, tm2, tm3;
@@ -509,7 +509,7 @@ void FastPlannerManager::optimizeTopoBspline(double start_t, double duration,
 
   tm3 = (ros::Time::now() - t1).toSec();
   ROS_INFO("optimization %d cost %lf, %lf, %lf seconds.", traj_id, tm1, tm2, tm3);
-}
+}*/
 
 Eigen::MatrixXd FastPlannerManager::reparamLocalTraj(double start_t, double& dt, double& duration) {
   /* get the sample points local traj within radius */
@@ -546,7 +546,7 @@ Eigen::MatrixXd FastPlannerManager::reparamLocalTraj(double start_t, double dura
   return ctrl_pts;
 }
 
-void FastPlannerManager::findCollisionRange(vector<Eigen::Vector3d>& colli_start,
+/*void FastPlannerManager::findCollisionRange(vector<Eigen::Vector3d>& colli_start,
                                             vector<Eigen::Vector3d>& colli_end,
                                             vector<Eigen::Vector3d>& start_pts,
                                             vector<Eigen::Vector3d>& end_pts) {
@@ -555,7 +555,7 @@ void FastPlannerManager::findCollisionRange(vector<Eigen::Vector3d>& colli_start
   NonUniformBspline* initial_traj = &plan_data_.initial_local_segment_;
   initial_traj->getTimeSpan(t_m, t_mp);
 
-  /* find range of collision */
+  // find range of collision 
   double t_s = -1.0, t_e;
   for (double tc = t_m; tc <= t_mp + 1e-4; tc += 0.05) {
 
@@ -577,7 +577,7 @@ void FastPlannerManager::findCollisionRange(vector<Eigen::Vector3d>& colli_start
 
   if (colli_start.size() == 1 && colli_end.size() == 0) return;
 
-  /* find start and end safe segment */
+  // find start and end safe segment 
   double dt = initial_traj->getInterval();
   int    sn = ceil((t_s - t_m) / dt);
   dt        = (t_s - t_m) / sn;
@@ -604,12 +604,13 @@ void FastPlannerManager::findCollisionRange(vector<Eigen::Vector3d>& colli_start
     end_pts.push_back(initial_traj->evaluateDeBoor(t_mp));
   }
 }
+*/
 
 // !SECTION
 
 void FastPlannerManager::planYaw(const Eigen::Vector3d& start_yaw) {
-  ROS_INFO("plan yaw");
-  auto t1 = ros::Time::now();
+  std::cout << "[planner_manager]: plan yaw" << std::endl;
+  auto t1 = rclcpp::Clock().now();
   // calculate waypoints of heading
 
   auto&  pos      = local_data_.position_traj_;
@@ -676,7 +677,7 @@ void FastPlannerManager::planYaw(const Eigen::Vector3d& start_yaw) {
   plan_data_.dt_yaw_      = dt_yaw;
   plan_data_.dt_yaw_path_ = dt_yaw;
 
-  std::cout << "plan heading: " << (ros::Time::now() - t1).toSec() << std::endl;
+  std::cout << "plan heading: " << (rclcpp::Clock().now() - t1).seconds() << std::endl;
 }
 
 void FastPlannerManager::calcNextYaw(const double& last_yaw, double& yaw) {

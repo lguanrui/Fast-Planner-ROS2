@@ -32,7 +32,7 @@
 
 #include <bspline/non_uniform_bspline.h>
 #include <poly_traj/polynomial_traj.h>
-//#include <path_searching/topo_prm.h>
+#include <path_searching/plan_utils.h>
 
 using std::vector;
 
@@ -45,7 +45,7 @@ public:
   vector<NonUniformBspline> local_traj_;
 
   double global_duration_;
-  ros::Time global_start_time_;
+  rclcpp::Time global_start_time_;
   double local_start_time_, local_end_time_;
   double time_increase_;
   double last_time_inc_;
@@ -56,7 +56,7 @@ public:
 
   bool localTrajReachTarget() { return fabs(local_end_time_ - global_duration_) < 0.1; }
 
-  void setGlobalTraj(const PolynomialTraj& traj, const ros::Time& time) {
+  void setGlobalTraj(const PolynomialTraj& traj, const rclcpp::Time& time) {
     global_traj_ = traj;
     global_traj_.init();
     global_duration_ = global_traj_.getTimeSum();
