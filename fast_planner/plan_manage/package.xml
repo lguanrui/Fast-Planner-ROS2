@@ -13,6 +13,7 @@
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>fast_planner_msgs</depend>
   <depend>plan_env</depend>
   <depend>path_searching</depend>
   <depend>bspline</depend>

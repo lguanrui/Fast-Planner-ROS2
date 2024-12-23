@@ -13,6 +13,7 @@ find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(fast_planner_msgs REQUIRED)
 #find_package(quadrotor_msgs REQUIRED)
 find_package(plan_env REQUIRED)
 find_package(path_searching REQUIRED)
@@ -23,8 +24,10 @@ find_package(cv_bridge REQUIRED)
 
 set(dependencies
   rclcpp
+  rclcpp_components
   std_msgs
   geometry_msgs
+  fast_planner_msgs
   #quadrotor_msgs
   plan_env
   path_searching
