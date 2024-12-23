@@ -29,85 +29,9 @@
 #include <plan_env/edt_environment.h>
 #include <plan_env/raycast.h>
 #include <random>
+#include <path_searching/plan_utils.h>
 
 namespace fast_planner {
-
-/* ---------- used for iterating all topo combination ---------- */
-class TopoIterator {
-private:
-  /* data */
-  vector<int> path_nums_;
-  vector<int> cur_index_;
-  int combine_num_;
-  int cur_num_;
-
-  void increase(int bit_num) {
-    cur_index_[bit_num] += 1;
-    if (cur_index_[bit_num] >= path_nums_[bit_num]) {
-      cur_index_[bit_num] = 0;
-      increase(bit_num + 1);
-    }
-  }
-
-public:
-  TopoIterator(vector<int> pn) {
-    path_nums_ = pn;
-    cur_index_.resize(path_nums_.size());
-    fill(cur_index_.begin(), cur_index_.end(), 0);
-    cur_num_ = 0;
-
-    combine_num_ = 1;
-    for (int i = 0; i < path_nums_.size(); ++i) {
-      combine_num_ *= path_nums_[i] > 0 ? path_nums_[i] : 1;
-    }
-    std::cout << "[Topo]: merged path num: " << combine_num_ << std::endl;
-  }
-  TopoIterator() {
-  }
-  ~TopoIterator() {
-  }
-
-  bool nextIndex(vector<int>& index) {
-    index = cur_index_;
-    cur_num_ += 1;
-
-    if (cur_num_ == combine_num_) return false;
-
-    // go to next combination
-    increase(0);
-    return true;
-  }
-};
-
-/* ---------- node of topo graph ---------- */
-class GraphNode {
-private:
-  /* data */
-
-public:
-  enum NODE_TYPE { Guard = 1, Connector = 2 };
-
-  enum NODE_STATE { NEW = 1, CLOSE = 2, OPEN = 3 };
-
-  GraphNode(/* args */) {
-  }
-  GraphNode(Eigen::Vector3d pos, NODE_TYPE type, int id) {
-    pos_ = pos;
-    type_ = type;
-    state_ = NEW;
-    id_ = id;
-  }
-  ~GraphNode() {
-  }
-
-  vector<shared_ptr<GraphNode>> neighbors_;
-  Eigen::Vector3d pos_;
-  NODE_TYPE type_;
-  NODE_STATE state_;
-  int id_;
-
-  typedef shared_ptr<GraphNode> Ptr;
-};
 
 class TopologyPRM {
 private:
