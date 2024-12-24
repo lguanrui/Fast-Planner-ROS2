@@ -29,15 +29,17 @@ add_library(path_searching SHARED
 )
 ament_target_dependencies(path_searching ${dependencies})
 target_link_libraries(path_searching ${PCL_LIBRARIES})
+ament_export_targets(path_searching HAS_LIBRARY_TARGET)
 
 ament_export_include_directories(include)
 ament_export_dependencies(${dependencies})
 
 install(DIRECTORY include/ DESTINATION include)
 install(TARGETS path_searching 
+    EXPORT path_searching
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
     INCLUDES DESTINATION include
 )
 
