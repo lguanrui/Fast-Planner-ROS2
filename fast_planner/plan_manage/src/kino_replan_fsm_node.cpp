@@ -88,8 +88,7 @@ private:
   int current_wp_;
 
   /* ROS2 utils */
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, nav_msgs::msg::Odometry>
-      SyncPolicyImageOdom;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, nav_msgs::msg::Odometry> SyncPolicyImageOdom;
   //typedef std::shared_ptr<message_filters::Synchronizer<SyncPolicyImageOdom>> SynchronizerImageOdom;
 
   rclcpp::TimerBase::SharedPtr occ_timer_, esdf_timer_, vis_timer_;
@@ -139,7 +138,7 @@ private:
   void checkCollisionCallback();
   void waypointCallback(const nav_msgs::msg::Path::SharedPtr msg);
   void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
-  void depthOdomCallback(const sensor_msgs::msg::Image::SharedPtr depth_msg, const nav_msgs::msg::Odometry::SharedPtr odom_msg, int param1, int param2);
+  void depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr depth_msg, const nav_msgs::msg::Odometry::ConstSharedPtr odom_msg);
   void cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr cloud_msg);
   void updateOccupancyCallback();
   void updateESDFCallback();
@@ -343,9 +342,8 @@ void KinoReplanFSM::init() {
  /* init callback */
   auto depth_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, "/sdf_map/depth");
   auto sync_odom_sub_ = std::make_shared<message_filters::Subscriber<nav_msgs::msg::Odometry>>(this, "/sdf_map/odom");
-  auto depth_odom_sync = std::make_shared<message_filters::Synchronizer<SyncPolicyImageOdom>>(
-      SyncPolicyImageOdom(100), *depth_sub_, *sync_odom_sub_);
-  depth_odom_sync->registerCallback(std::bind(&KinoReplanFSM::depthOdomCallback, this, std::placeholders::_1, std::placeholders::_2, 0, 1));
+  auto depth_odom_sync = std::make_shared<message_filters::Synchronizer<SyncPolicyImageOdom>>(SyncPolicyImageOdom(10), *depth_sub_, *sync_odom_sub_);
+  depth_odom_sync->registerCallback(std::bind(&KinoReplanFSM::depthOdomCallback, this, std::placeholders::_1, std::placeholders::_2));
 
 // use odometry and point cloud
 indep_cloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -396,7 +394,7 @@ vis_pubs_.push_back(yaw_pub_);
 
 }
 
-void KinoReplanFSM::depthOdomCallback(const sensor_msgs::msg::Image::SharedPtr depth_msg, const nav_msgs::msg::Odometry::SharedPtr odom_msg, int param1, int param2) {
+void KinoReplanFSM::depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr depth_msg, const nav_msgs::msg::Odometry::ConstSharedPtr odom_msg) {
 
 planner_manager_->sdf_map_->depthOdomCallback(depth_msg, odom_msg);
 
