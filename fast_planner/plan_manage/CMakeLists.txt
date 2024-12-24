@@ -60,6 +60,8 @@ ament_export_dependencies(${dependencies})
 
 install(TARGETS
   kino_replan_fsm
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
   DESTINATION lib/${PROJECT_NAME}
 )
 

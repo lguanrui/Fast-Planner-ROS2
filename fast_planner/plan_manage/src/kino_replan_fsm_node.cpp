@@ -154,6 +154,8 @@ void KinoReplanFSM::init() {
   have_odom_   = false;
   PlanParameters pp;
 
+  cout << "[KinoReplanFSM]: KinoReplanFSM init" << endl;
+
   /*  fsm param  */
   this->declare_parameter("fsm.flight_type", -1);
   this->declare_parameter("fsm.thresh_replan", -1.0);
@@ -174,6 +176,11 @@ void KinoReplanFSM::init() {
     this->get_parameter("fsm.waypoint" + std::to_string(i) + "_y", waypoints_[i][1]);
     this->get_parameter("fsm.waypoint" + std::to_string(i) + "_z", waypoints_[i][2]);
   }
+
+  RCLCPP_INFO(this->get_logger(), "fsm.flight_type: %d", target_type_);
+  RCLCPP_INFO(this->get_logger(), "fsm.thresh_replan: %f", replan_thresh_);
+  RCLCPP_INFO(this->get_logger(), "fsm.thresh_no_replan: %f", no_replan_thresh_);
+  RCLCPP_INFO(this->get_logger(), "fsm.waypoint_num: %d", waypoint_num_);
 
   /* planner manager params */
   this->declare_parameter("manager.max_vel", -1.0);
