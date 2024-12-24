@@ -1,0 +1,7 @@
+<library path="lib/libkino_replan_fsm">
+  <class name="fast_planner/KinoReplanFSM" type="KinoReplanFSM" base_class_type="nodelet::Nodelet">
+    <description>
+      A nodelet for replanning the path when the robot is blocked by obstacles using kinodynamic astar and fast_planner
+    </description>
+  </class>
+</library>
