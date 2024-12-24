@@ -547,15 +547,18 @@ void KinodynamicAstar::init()
   inv_time_resolution_ = 1.0 / time_resolution_;
   edt_environment_->sdf_map_->getRegion(origin_, map_size_3d_);
 
-  cout << "origin_: " << origin_.transpose() << endl;
-  cout << "map size: " << map_size_3d_.transpose() << endl;
+  cout << "[KinodynamicAstar]: origin_: " << origin_.transpose() << endl;
+  cout << "[KinodynamicAstar]: map size: " << map_size_3d_.transpose() << endl;
 
   /* ---------- pre-allocated node ---------- */
+  cout << "[KinodynamicAstar]: allocate_num_: " << allocate_num_ << endl;
   path_node_pool_.resize(allocate_num_);
+
   for (int i = 0; i < allocate_num_; i++)
   {
     path_node_pool_[i] = new PathNode;
   }
+  cout << "[KinodynamicAstar]: path_node_pool_ allocated." << endl;
 
   phi_ = Eigen::MatrixXd::Identity(6, 6);
   use_node_num_ = 0;
