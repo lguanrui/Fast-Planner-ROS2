@@ -42,6 +42,7 @@ using std::unique_ptr;
 using std::vector;
 
 namespace fast_planner {
+
 class EDTEnvironment {
 private:
   /* data */

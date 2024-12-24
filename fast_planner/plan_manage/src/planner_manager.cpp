@@ -30,7 +30,7 @@ namespace fast_planner {
 
 FastPlannerManager::FastPlannerManager() {}
 
-FastPlannerManager::~FastPlannerManager() { std::cout << "des manager" << std::endl; }
+FastPlannerManager::~FastPlannerManager() { std::cout << "[FastPlannerManager]: destroying manager" << std::endl; }
 
 void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& mp, KinodynamicAstarParams& kap, bool use_geometric_path,
                                         bool use_kinodynamic_path, bool use_topo_path,
@@ -44,6 +44,7 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& 
   sdf_map_->initMap(mp);
   edt_environment_.reset(new EDTEnvironment);
   edt_environment_->setMap(sdf_map_);
+  cout << "[manager]: edt map initialized" << endl;
 
   /*if (use_geometric_path) {
     geo_path_finder_.reset(new Astar);
@@ -54,9 +55,13 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& 
 
   if (use_kinodynamic_path) {
     kino_path_finder_.reset(new KinodynamicAstar);
+    cout << "[manager]: kinodynamic path finder created" << endl;
     kino_path_finder_->setParam(kap);
+    cout << "[manager]: kinodynamic path finder finished setParams" << endl;
     kino_path_finder_->setEnvironment(edt_environment_);
+    cout << "[manager]: kinodynamic path finder finished setEnvironment" << endl;
     kino_path_finder_->init();
+    cout << "[manager]: kinodynamic path finder finished init" << endl;
   }
 
   /*if (use_optimization) {
