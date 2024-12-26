@@ -365,30 +365,30 @@ esdf_timer_ = this->create_wall_timer(
 vis_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(50), std::bind(&KinoReplanFSM::visCallback, this));
 
-map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/occupancy", 10);
-map_inf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/occupancy_inflate", 10);
-esdf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/esdf", 10);
-update_range_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/sdf_map/update_range", 10);
-unknown_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/unknown", 10);
-depth_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/sdf_map/depth_cloud", 10);
-bspline_pub_ = this->create_publisher<fast_planner_msgs::msg::Bspline>("/planning_vis/bspline", 10);
+map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/occupancy", 10);
+map_inf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/occupancy_inflate", 10);
+esdf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/esdf", 10);
+update_range_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("sdf_map/update_range", 10);
+unknown_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/unknown", 10);
+depth_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/depth_cloud", 10);
+bspline_pub_ = this->create_publisher<fast_planner_msgs::msg::Bspline>("planning_vis/bspline", 10);
 
-traj_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/trajectory", 20);
+traj_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("planning_vis/trajectory", 20);
 vis_pubs_.push_back(traj_pub_);
 
-topo_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/topo_path", 20);
+topo_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("planning_vis/topo_path", 20);
 vis_pubs_.push_back(topo_pub_);
 
-predict_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/prediction", 20);
+predict_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("planning_vis/prediction", 20);
 vis_pubs_.push_back(predict_pub_);
 
-visib_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/visib_constraint", 20);
+visib_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("planning_vis/visib_constraint", 20);
 vis_pubs_.push_back(visib_pub_);
 
-frontier_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/frontier", 20);
+frontier_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("planning_vis/frontier", 20);
 vis_pubs_.push_back(frontier_pub_);
 
-yaw_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/planning_vis/yaw", 20);
+yaw_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("planning_vis/yaw", 20);
 vis_pubs_.push_back(yaw_pub_);
 
   // Create a publisher for the "new" topic to signal new events
