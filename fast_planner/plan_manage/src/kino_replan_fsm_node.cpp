@@ -347,14 +347,14 @@ void KinoReplanFSM::init() {
   replan_pub_ = this->create_publisher<std_msgs::msg::Empty>("replan", 10);
 
  /* init callback */
-  auto depth_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, "/sdf_map/depth");
-  auto sync_odom_sub_ = std::make_shared<message_filters::Subscriber<nav_msgs::msg::Odometry>>(this, "/sdf_map/odom");
+  auto depth_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, "depth");
+  auto sync_odom_sub_ = std::make_shared<message_filters::Subscriber<nav_msgs::msg::Odometry>>(this, "sync_depth_odom");
   auto depth_odom_sync = std::make_shared<message_filters::Synchronizer<SyncPolicyImageOdom>>(SyncPolicyImageOdom(10), *depth_sub_, *sync_odom_sub_);
   depth_odom_sync->registerCallback(std::bind(&KinoReplanFSM::depthOdomCallback, this, std::placeholders::_1, std::placeholders::_2));
 
 // use odometry and point cloud
 indep_cloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-    "/sdf_map/cloud", 10, std::bind(&KinoReplanFSM::cloudCallback, this, std::placeholders::_1));
+    "cloud", 10, std::bind(&KinoReplanFSM::cloudCallback, this, std::placeholders::_1));
 
 occ_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(50), std::bind(&KinoReplanFSM::updateOccupancyCallback, this));
