@@ -90,6 +90,9 @@ private:
   /* ROS2 utils */
   typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, nav_msgs::msg::Odometry> SyncPolicyImageOdom;
   //typedef std::shared_ptr<message_filters::Synchronizer<SyncPolicyImageOdom>> SynchronizerImageOdom;
+  std::vector<std::shared_ptr<message_filters::Synchronizer<SyncPolicyImageOdom>>>   sync_cam;
+  std::vector<std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>>> sync_subs_cam;
+  std::vector<std::shared_ptr<message_filters::Subscriber<nav_msgs::msg::Odometry>>> sync_subs_odom;
 
   rclcpp::TimerBase::SharedPtr occ_timer_, esdf_timer_, vis_timer_;
   rclcpp::TimerBase::SharedPtr exec_timer_, safety_timer_;
@@ -351,6 +354,10 @@ void KinoReplanFSM::init() {
   auto sync_odom_sub_ = std::make_shared<message_filters::Subscriber<nav_msgs::msg::Odometry>>(this, "sync_depth_odom");
   auto depth_odom_sync = std::make_shared<message_filters::Synchronizer<SyncPolicyImageOdom>>(SyncPolicyImageOdom(10), *depth_sub_, *sync_odom_sub_);
   depth_odom_sync->registerCallback(std::bind(&KinoReplanFSM::depthOdomCallback, this, std::placeholders::_1, std::placeholders::_2));
+
+  sync_cam.push_back(depth_odom_sync);
+  sync_subs_cam.push_back(depth_sub_);
+  sync_subs_odom.push_back(sync_odom_sub_);
 
 // use odometry and point cloud
 indep_cloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
