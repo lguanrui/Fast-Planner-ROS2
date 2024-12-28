@@ -40,13 +40,23 @@ def generate_launch_description():
         extra_arguments=[{'use_intra_process_comms': True}],
     )
 
+    bspline_tracker_node = ComposableNode(
+        package='plan_manage',
+        plugin='fast_planner::BsplineTracker', 
+        namespace=name,
+        name='bspline_tracker',
+        parameters=[local_planner_config],
+        extra_arguments=[{'use_intra_process_comms': True}],
+    )
+
     kino_replan_container = ComposableNodeContainer(
         name='kino_replan_container',
         namespace=name,
         package='rclcpp_components',
         executable='component_container_mt',
         composable_node_descriptions=[
-            kino_replan_node
+            kino_replan_node,
+            bspline_tracker_node
         ],
         output='screen',
     )
