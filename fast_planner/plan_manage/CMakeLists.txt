@@ -14,7 +14,8 @@ find_package(PCL REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(fast_planner_msgs REQUIRED)
-#find_package(quadrotor_msgs REQUIRED)
+find_package(quadrotor_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(plan_env REQUIRED)
 find_package(path_searching REQUIRED)
 find_package(bspline REQUIRED)
@@ -28,7 +29,8 @@ set(dependencies
   std_msgs
   geometry_msgs
   fast_planner_msgs
-  #quadrotor_msgs
+  quadrotor_msgs
+  visualization_msgs
   plan_env
   path_searching
   bspline
@@ -55,11 +57,18 @@ rclcpp_components_register_nodes(kino_replan_fsm "fast_planner::KinoReplanFSM")
 ament_export_libraries(kino_replan_fsm)
 ament_export_dependencies(${dependencies})
 
-#add_executable(traj_server src/traj_server.cpp)
-#ament_target_dependencies(traj_server ${dependencies})
+add_library(bspline_tracker_node SHARED
+  src/bspline_tracker_node.cpp)
+set_target_properties(bspline_tracker_node PROPERTIES
+  COMPILE_DEFINITIONS "COMPOSITION_BUILDING_DLL"
+) 
+ament_target_dependencies(bspline_tracker_node ${dependencies})
+rclcpp_components_register_nodes(bspline_tracker_node "fast_planner::BsplineTrackerNode")
+ament_export_libraries(bspline_tracker_node)
+ament_export_dependencies(${dependencies})
 
 install(TARGETS
-  kino_replan_fsm
+  kino_replan_fsm bspline_tracker_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   DESTINATION lib/${PROJECT_NAME}

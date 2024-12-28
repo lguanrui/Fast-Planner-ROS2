@@ -5,3 +5,12 @@
     </description>
   </class>
 </library>
+
+
+<library path="lib/libbspline_tracker_node">
+  <class name="fast_planner/BSplineTrackerNode" type="BSplineTrackerNode" base_class_type="nodelet::Nodelet">
+    <description>
+      A nodelet for tracking the path using b-spline
+    </description>
+  </class>
+</library>
