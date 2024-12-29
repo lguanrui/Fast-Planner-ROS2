@@ -44,7 +44,7 @@ def generate_launch_description():
 
     bspline_tracker_node = ComposableNode(
         package='plan_manage',
-        plugin='fast_planner::BsplineTracker', 
+        plugin='fast_planner::BsplineTrackerNode', 
         namespace=name,
         name='bspline_tracker',
         parameters=[local_planner_config],
