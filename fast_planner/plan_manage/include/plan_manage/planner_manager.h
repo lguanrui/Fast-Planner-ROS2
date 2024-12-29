@@ -56,7 +56,8 @@ public:
 
   void planYaw(const Eigen::Vector3d& start_yaw);
 
-  void initPlanModules(PlanParameters& pp, MappingParameters& mp, KinodynamicAstarParams& kap, bool use_geometric_path,
+  void initPlanModules(PlanParameters& pp, MappingParameters& mp, KinodynamicAstarParams& kap, OptimizationParams& opp,  
+                                        bool use_geometric_path,
                                         bool use_kinodynamic_path, bool use_topo_path,
                                         bool use_optimization);
 

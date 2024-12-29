@@ -35,21 +35,6 @@
 // Output: the optimized sequence of points
 // The format of points: N x 3 matrix, each row is a point
 namespace fast_planner {
-class BsplineOptimizer {
-
-public:
-  static const int SMOOTHNESS;
-  static const int DISTANCE;
-  static const int FEASIBILITY;
-  static const int ENDPOINT;
-  static const int GUIDE;
-  static const int WAYPOINTS;
-
-  static const int GUIDE_PHASE;
-  static const int NORMAL_PHASE;
-
-  BsplineOptimizer() {}
-  ~BsplineOptimizer() {}
 
   struct OptimizationParams {
   double lambda1;
@@ -75,6 +60,22 @@ public:
   int algorithm2;
   int order;
   };
+
+class BsplineOptimizer {
+
+public:
+  static const int SMOOTHNESS;
+  static const int DISTANCE;
+  static const int FEASIBILITY;
+  static const int ENDPOINT;
+  static const int GUIDE;
+  static const int WAYPOINTS;
+
+  static const int GUIDE_PHASE;
+  static const int NORMAL_PHASE;
+
+  BsplineOptimizer() {}
+  ~BsplineOptimizer() {}
 
   /* main API */
   void setEnvironment(const EDTEnvironment::Ptr& env);

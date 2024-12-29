@@ -155,7 +155,6 @@ void KinoReplanFSM::init() {
   exec_state_  = FSM_EXEC_STATE::INIT;
   have_target_ = false;
   have_odom_   = false;
-  PlanParameters pp;
 
   cout << "[KinoReplanFSM]: KinoReplanFSM init" << endl;
 
@@ -186,6 +185,7 @@ void KinoReplanFSM::init() {
   RCLCPP_INFO(this->get_logger(), "fsm.waypoint_num: %d", waypoint_num_);
 
   /* planner manager params */
+  PlanParameters pp;
   this->declare_parameter("manager.max_vel", -1.0);
   this->declare_parameter("manager.max_acc", -1.0);
   this->declare_parameter("manager.max_jerk", -1.0);
@@ -208,6 +208,7 @@ void KinoReplanFSM::init() {
   use_kinodynamic_path = true;
   use_topo_path = false;
   use_optimization = true;
+
   /* get sdf_map params*/
   MappingParameters mp;
   double x_size, y_size, z_size;
@@ -327,6 +328,69 @@ void KinoReplanFSM::init() {
   this->get_parameter("search.optimistic", kap.optimistic);
   this->get_parameter("search.vel_margin", kap.vel_margin);
 
+  /* optimization params */
+  OptimizationParams opp;
+
+  // Declare parameters
+  this->declare_parameter<double>("optimization.lambda1", -1.0);
+  this->declare_parameter<double>("optimization.lambda2", -1.0);
+  this->declare_parameter<double>("optimization.lambda3", -1.0);
+  this->declare_parameter<double>("optimization.lambda4", -1.0);
+  this->declare_parameter<double>("optimization.lambda5", -1.0);
+  this->declare_parameter<double>("optimization.lambda6", -1.0);
+  this->declare_parameter<double>("optimization.lambda7", -1.0);
+  this->declare_parameter<double>("optimization.lambda8", -1.0);
+
+  this->declare_parameter<double>("optimization.dist0", -1.0);
+  this->declare_parameter<double>("optimization.max_vel", -1.0);
+  this->declare_parameter<double>("optimization.max_acc", -1.0);
+  this->declare_parameter<double>("optimization.visib_min", -1.0);
+  this->declare_parameter<double>("optimization.dlmin", -1.0);
+  this->declare_parameter<double>("optimization.wnl", -1.0);
+
+  this->declare_parameter<int>("optimization.max_iteration_num1", -1);
+  this->declare_parameter<int>("optimization.max_iteration_num2", -1);
+  this->declare_parameter<int>("optimization.max_iteration_num3", -1);
+  this->declare_parameter<int>("optimization.max_iteration_num4", -1);
+
+  this->declare_parameter<double>("optimization.max_iteration_time1", -1.0);
+  this->declare_parameter<double>("optimization.max_iteration_time2", -1.0);
+  this->declare_parameter<double>("optimization.max_iteration_time3", -1.0);
+  this->declare_parameter<double>("optimization.max_iteration_time4", -1.0);
+
+  this->declare_parameter<int>("optimization.algorithm1", -1);
+  this->declare_parameter<int>("optimization.algorithm2", -1);
+  this->declare_parameter<int>("optimization.order", -1);
+
+  // Get parameters
+  this->get_parameter("optimization.lambda1", opp.lambda1);
+  this->get_parameter("optimization.lambda2", opp.lambda2);
+  this->get_parameter("optimization.lambda3", opp.lambda3);
+  this->get_parameter("optimization.lambda4", opp.lambda4);
+  this->get_parameter("optimization.lambda5", opp.lambda5);
+  this->get_parameter("optimization.lambda6", opp.lambda6);
+  this->get_parameter("optimization.lambda7", opp.lambda7);
+  this->get_parameter("optimization.lambda8", opp.lambda8);
+  this->get_parameter("optimization.dist0", opp.dist0);
+  this->get_parameter("optimization.max_vel", opp.max_vel);
+  this->get_parameter("optimization.max_acc", opp.max_acc);
+  this->get_parameter("optimization.visib_min", opp.visib_min);
+  this->get_parameter("optimization.dlmin", opp.dlmin);
+  this->get_parameter("optimization.wnl", opp.wnl);
+
+  this->get_parameter("optimization.max_iteration_num1", opp.max_iteration_num[0]);
+  this->get_parameter("optimization.max_iteration_num2", opp.max_iteration_num[1]);
+  this->get_parameter("optimization.max_iteration_num3", opp.max_iteration_num[2]);
+  this->get_parameter("optimization.max_iteration_num4", opp.max_iteration_num[3]);
+
+  this->get_parameter("optimization.max_iteration_time1", opp.max_iteration_time[0]);
+  this->get_parameter("optimization.max_iteration_time2", opp.max_iteration_time[1]);
+  this->get_parameter("optimization.max_iteration_time3", opp.max_iteration_time[2]);
+  this->get_parameter("optimization.max_iteration_time4", opp.max_iteration_time[3]);
+
+  this->get_parameter("optimization.algorithm1", opp.algorithm1);
+  this->get_parameter("optimization.algorithm2", opp.algorithm2);
+  this->get_parameter("optimization.order", opp.order);
 
   // Create a timer to execute the FSM callback every 100 milliseconds
   exec_timer_ = this->create_wall_timer(
@@ -402,7 +466,7 @@ vis_pubs_.push_back(yaw_pub_);
 
   /* initialize main modules */
   planner_manager_.reset(new FastPlannerManager);
-  planner_manager_->initPlanModules(pp, mp, kap, use_geometric_path, use_kinodynamic_path, use_topo_path,
+  planner_manager_->initPlanModules(pp, mp, kap, opp, use_geometric_path, use_kinodynamic_path, use_topo_path,
                                     use_optimization);
   visualization_.reset(new PlanningVisualization());
 

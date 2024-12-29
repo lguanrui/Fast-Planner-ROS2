@@ -32,7 +32,7 @@ FastPlannerManager::FastPlannerManager() {}
 
 FastPlannerManager::~FastPlannerManager() { std::cout << "[FastPlannerManager]: destroying manager" << std::endl; }
 
-void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& mp, KinodynamicAstarParams& kap, bool use_geometric_path,
+void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& mp, KinodynamicAstarParams& kap, OptimizationParams& opp, bool use_geometric_path,
                                         bool use_kinodynamic_path, bool use_topo_path,
                                         bool use_optimization) {
   /* read algorithm parameters */
@@ -64,14 +64,14 @@ void FastPlannerManager::initPlanModules(PlanParameters& pp, MappingParameters& 
     cout << "[manager]: kinodynamic path finder finished init" << endl;
   }
 
-  /*if (use_optimization) {
+  if (use_optimization) {
     bspline_optimizers_.resize(10);
     for (int i = 0; i < 10; ++i) {
       bspline_optimizers_[i].reset(new BsplineOptimizer);
-      bspline_optimizers_[i]->setParam(nh);
+      bspline_optimizers_[i]->setParam(opp);
       bspline_optimizers_[i]->setEnvironment(edt_environment_);
     }
-  }*/
+  }
 
   /*if (use_topo_path) {
     topo_prm_.reset(new TopologyPRM);
