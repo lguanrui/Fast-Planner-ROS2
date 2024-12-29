@@ -184,7 +184,10 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 
   Eigen::MatrixXd ctrl_pts;
   NonUniformBspline::parameterizeToBspline(ts, point_set, start_end_derivatives, ctrl_pts);
+  cout << "[kino replan]: bspline control points: " << ctrl_pts.rows() << endl;
+
   NonUniformBspline init(ctrl_pts, 3, ts);
+  cout << "[kino replan]: finish bspline init: " << ctrl_pts.rows() << endl;
 
   // bspline trajectory optimization
 
@@ -198,6 +201,7 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
   }
 
   ctrl_pts = bspline_optimizers_[0]->BsplineOptimizeTraj(ctrl_pts, ts, cost_function, 1, 1);
+  cout << "[kino replan]: finish bspline optimization: " << ctrl_pts.rows() << endl;
 
   // t_opt = (ros::Time::now() - t1).toSec();
   t_opt = (rclcpp::Clock().now() - t1).seconds();
@@ -207,10 +211,14 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
   // t1 = ros::Time::now();
   t1 = rclcpp::Clock().now();
   NonUniformBspline pos = NonUniformBspline(ctrl_pts, 3, ts);
+  cout << "[kino replan]: finish bspline init: " << ctrl_pts.rows() << endl;
 
   double to = pos.getTimeSum();
+  cout << "[kino replan]: initial time: " << to << endl;
+
   pos.setPhysicalLimits(pp_.max_vel_, pp_.max_acc_);
   bool feasible = pos.checkFeasibility(false);
+  cout << "[kino replan]: initial feasible: " << feasible << endl;
 
   int iter_num = 0;
   //while (!feasible && ros::ok()) {
