@@ -107,12 +107,17 @@ void BsplineOptimizer::setWaypoints(const vector<Eigen::Vector3d>& waypts,
 Eigen::MatrixXd BsplineOptimizer::BsplineOptimizeTraj(const Eigen::MatrixXd& points, const double& ts,
                                                       const int& cost_function, int max_num_id,
                                                       int max_time_id) {
+  cout << "start optimization" << endl;
   setControlPoints(points);
+  cout << "set control points" << endl;
   setBsplineInterval(ts);
+  cout << "set bspline interval" << endl;
   setCostFunction(cost_function);
+  cout <<  "set cost function" << endl;
   setTerminateCond(max_num_id, max_time_id);
-
+  cout << "set terminate condition" << endl;
   optimize();
+  cout <<   "finish optimize" << endl;
   return this->control_points_;
 }
 

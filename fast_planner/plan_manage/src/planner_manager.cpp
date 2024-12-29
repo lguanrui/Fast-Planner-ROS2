@@ -196,11 +196,12 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
   cout << "[kino replan]: start bspline optimization" << endl;
 
   int cost_function = BsplineOptimizer::NORMAL_PHASE;
-  cout << "[kino replan]: cost_functioin: " << cost_function << endl;
+  cout << "[kino replan]: cost_functioin" << cost_function << endl;
 
   if (status != KinodynamicAstar::REACH_END) {
     cost_function |= BsplineOptimizer::ENDPOINT;
   }
+  cout << "[kino replan]: cost_functioin" << cost_function << endl;
 
   ctrl_pts = bspline_optimizers_[0]->BsplineOptimizeTraj(ctrl_pts, ts, cost_function, 1, 1);
   cout << "[kino replan]: finish bspline optimization: " << ctrl_pts.rows() << endl;
