@@ -193,8 +193,10 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 
   // t1 = ros::Time::now();
   t1 = rclcpp::Clock().now();
+  cout << "[kino replan]: start bspline optimization" << endl;
 
   int cost_function = BsplineOptimizer::NORMAL_PHASE;
+  cout << "[kino replan]: cost_functioin: " << cost_function << endl;
 
   if (status != KinodynamicAstar::REACH_END) {
     cost_function |= BsplineOptimizer::ENDPOINT;
