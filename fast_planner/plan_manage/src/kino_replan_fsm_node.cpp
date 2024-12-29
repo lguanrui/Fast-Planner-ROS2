@@ -410,7 +410,6 @@ vis_pubs_.push_back(yaw_pub_);
 
 void KinoReplanFSM::depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr depth_msg, const nav_msgs::msg::Odometry::ConstSharedPtr odom_msg) {
 
-cout << "Receving the deptha and odom." << endl;
 planner_manager_->sdf_map_->depthOdomCallback(depth_msg, odom_msg);
 
 }

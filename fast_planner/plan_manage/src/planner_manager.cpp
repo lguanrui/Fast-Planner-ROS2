@@ -168,16 +168,19 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
     cout << "[kino replan]: kinodynamic search success." << endl;
   }
 
+  cout << "[kino replan]: path length: " << kino_path_finder_->getPathLength() << endl;
   plan_data_.kino_path_ = kino_path_finder_->getKinoTraj(0.01);
 
   // t_search = (ros::Time::now() - t1).toSec();
   t_search = (rclcpp::Clock().now() - t1).seconds();
+  cout << "[kino replan]: search time: " << t_search << endl;
 
   // parameterize the path to bspline
 
   double                  ts = pp_.ctrl_pt_dist / pp_.max_vel_;
   vector<Eigen::Vector3d> point_set, start_end_derivatives;
   kino_path_finder_->getSamples(ts, point_set, start_end_derivatives);
+  cout << "[kino replan]: sample size: " << point_set.size() << endl;
 
   Eigen::MatrixXd ctrl_pts;
   NonUniformBspline::parameterizeToBspline(ts, point_set, start_end_derivatives, ctrl_pts);
