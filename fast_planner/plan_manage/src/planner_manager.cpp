@@ -168,8 +168,8 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
     cout << "[kino replan]: kinodynamic search success." << endl;
   }
 
-  cout << "[kino replan]: path length: " << kino_path_finder_->getPathLength() << endl;
   plan_data_.kino_path_ = kino_path_finder_->getKinoTraj(0.01);
+  cout << "[kino replan]: path size: " << plan_data_.kino_path_.size() << endl;
 
   // t_search = (ros::Time::now() - t1).toSec();
   t_search = (rclcpp::Clock().now() - t1).seconds();
