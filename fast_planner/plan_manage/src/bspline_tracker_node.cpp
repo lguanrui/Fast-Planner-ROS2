@@ -103,8 +103,8 @@ void BsplineTrackerNode::init() {
   */
 
   // Get BsplineTrackerNode parameters
-  this->declare_parameter("bspline_tracker/time_forward", -1.0);
-  this->get_parameter("bspline_tracker/time_forward", time_forward_);
+  this->declare_parameter("bspline_tracker.time_forward", -1.0);
+  this->get_parameter("bspline_tracker.time_forward", time_forward_);
   RCLCPP_INFO(this->get_logger(), "bspline_tracker: time_forward: %f", time_forward_);
 
   // ROS2 subscribers
