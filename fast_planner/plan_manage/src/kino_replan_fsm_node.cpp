@@ -442,7 +442,7 @@ esdf_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/esdf"
 update_range_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("sdf_map/update_range", 10);
 unknown_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/unknown", 10);
 depth_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("sdf_map/depth_cloud", 10);
-bspline_pub_ = this->create_publisher<fast_planner_msgs::msg::Bspline>("planning_vis/bspline", 10);
+bspline_pub_ = this->create_publisher<fast_planner_msgs::msg::Bspline>("planning/bspline", 10);
 
 traj_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("planning_vis/trajectory", 20);
 vis_pubs_.push_back(traj_pub_);
