@@ -158,6 +158,9 @@ void KinoReplanFSM::init() {
 
   cout << "[KinoReplanFSM]: KinoReplanFSM init" << endl;
 
+  this->declare_parameter<double>("max_vel", -1.0);
+  this->declare_parameter<double>("max_acc", -1.0);
+
   /*  fsm param  */
   this->declare_parameter("fsm.flight_type", -1);
   this->declare_parameter("fsm.thresh_replan", -1.0);
@@ -186,16 +189,16 @@ void KinoReplanFSM::init() {
 
   /* planner manager params */
   PlanParameters pp;
-  this->declare_parameter("manager.max_vel", -1.0);
-  this->declare_parameter("manager.max_acc", -1.0);
   this->declare_parameter("manager.max_jerk", -1.0);
   this->declare_parameter("manager.dynamic_environment", -1);
   this->declare_parameter("manager.clearance_threshold", -1.0);
   this->declare_parameter("manager.local_segment_length", -1.0);
   this->declare_parameter("manager.control_points_distance", -1.0);
 
-  this->get_parameter("manager.max_vel", pp.max_vel_);
-  this->get_parameter("manager.max_acc", pp.max_acc_);
+  this->get_parameter("max_vel", pp.max_vel_);
+  this->get_parameter("max_acc", pp.max_acc_);
+  this->RCLCPP_INFO(this->get_logger(), "pp max_vel: %f", pp.max_vel_);
+  this->RCLCPP_INFO(this->get_logger(), "pp max_acc: %f", pp.max_acc_);
   this->get_parameter("manager.max_jerk", pp.max_jerk_);
   this->get_parameter("manager.dynamic_environment", pp.dynamic_);
   this->get_parameter("manager.clearance_threshold", pp.clearance_);
@@ -302,8 +305,6 @@ void KinoReplanFSM::init() {
   KinodynamicAstarParams kap;
   this->declare_parameter("search.max_tau", -1.0);
   this->declare_parameter("search.init_max_tau", -1.0);
-  this->declare_parameter("search.max_vel", -1.0);
-  this->declare_parameter("search.max_acc", -1.0);
   this->declare_parameter("search.w_time", -1.0);
   this->declare_parameter("search.horizon", -1.0);
   this->declare_parameter("search.resolution_astar", -1.0);
@@ -314,10 +315,12 @@ void KinoReplanFSM::init() {
   this->declare_parameter("search.optimistic", true);
   this->declare_parameter("search.vel_margin", 0.0);
 
+  this->get_parameter("max_vel", kap.max_vel);
+  this->get_parameter("max_acc", kap.max_acc);
+  this->RCLCPP_INFO(this->get_logger(), "kap max_vel: %f", kap.max_vel);
+  this->RCLCPP_INFO(this->get_logger(), "kap max_acc: %f", kap.max_acc);
   this->get_parameter("search.max_tau", kap.max_tau);
   this->get_parameter("search.init_max_tau", kap.init_max_tau);
-  this->get_parameter("search.max_vel", kap.max_vel);
-  this->get_parameter("search.max_acc", kap.max_acc);
   this->get_parameter("search.w_time", kap.w_time);
   this->get_parameter("search.horizon", kap.horizon);
   this->get_parameter("search.resolution_astar", kap.resolution);
@@ -342,8 +345,6 @@ void KinoReplanFSM::init() {
   this->declare_parameter<double>("optimization.lambda8", -1.0);
 
   this->declare_parameter<double>("optimization.dist0", -1.0);
-  this->declare_parameter<double>("optimization.max_vel", -1.0);
-  this->declare_parameter<double>("optimization.max_acc", -1.0);
   this->declare_parameter<double>("optimization.visib_min", -1.0);
   this->declare_parameter<double>("optimization.dlmin", -1.0);
   this->declare_parameter<double>("optimization.wnl", -1.0);
@@ -372,8 +373,8 @@ void KinoReplanFSM::init() {
   this->get_parameter("optimization.lambda7", opp.lambda7);
   this->get_parameter("optimization.lambda8", opp.lambda8);
   this->get_parameter("optimization.dist0", opp.dist0);
-  this->get_parameter("optimization.max_vel", opp.max_vel);
-  this->get_parameter("optimization.max_acc", opp.max_acc);
+  this->get_parameter("max_vel", opp.max_vel);
+  this->get_parameter("max_acc", opp.max_acc);
   this->get_parameter("optimization.visib_min", opp.visib_min);
   this->get_parameter("optimization.dlmin", opp.dlmin);
   this->get_parameter("optimization.wnl", opp.wnl);
