@@ -865,6 +865,7 @@ bool KinoReplanFSM::callKinodynamicReplan() {
     bspline.yaw_dt = info->yaw_traj_.getInterval();
 
     bspline_pub_->publish(bspline);
+    cout << "[FSM]: published the bspline." << endl;
 
     /* visulization */
     auto plan_data = &planner_manager_->plan_data_;
