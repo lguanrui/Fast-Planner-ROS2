@@ -647,8 +647,10 @@ void KinoReplanFSM::execFSMCallback() {
     case REPLAN_TRAJ: {
       LocalTrajData* info     = &planner_manager_->local_data_;
       // ros::Time      time_now = ros::Time::now();
+      cout << "[FSM]: I'm in the REPLAN_TRAJ state" << endl;
       rclcpp::Time curr_time = this->now();
       double         t_cur    = (curr_time - info->start_time_).seconds();
+      cout << "[FSM]: REPLAN_TRAJ t_cur: " << t_cur << endl;
 
       start_pt_  = info->position_traj_.evaluateDeBoorT(t_cur);
       start_vel_ = info->velocity_traj_.evaluateDeBoorT(t_cur);
