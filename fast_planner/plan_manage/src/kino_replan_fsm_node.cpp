@@ -553,8 +553,8 @@ void KinoReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call
 }
 
 void KinoReplanFSM::printFSMExecState() {
-  string state_str[5] = { "INIT", "WAIT_TARGET", "GEN_NEW_TRAJ", "REPLAN_TRAJ", "EXEC_TRAJ" };
-
+  string state_str[5] = { "INIT", "WAIT_TARGET", "GEN_NEW_TRAJ", "REPLAN_TRAJ", "EXEC_TRAJ" }; 
+  cout << "[FSM]: I'm printing the FSM state" << endl;
   cout << "[FSM]: state: " + state_str[int(exec_state_)] << endl;
 }
 
@@ -563,6 +563,7 @@ void KinoReplanFSM::execFSMCallback() {
   fsm_num++;
   if (fsm_num == 100) {
     printFSMExecState();
+    cout << "Executing FSM" << endl;
     if (!have_odom_) std::cout << "no odom." << std::endl;
     if (!trigger_) std::cout << "wait for goal." << std::endl;
     fsm_num = 0;
