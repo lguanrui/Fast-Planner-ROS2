@@ -197,8 +197,8 @@ void KinoReplanFSM::init() {
 
   this->get_parameter("max_vel", pp.max_vel_);
   this->get_parameter("max_acc", pp.max_acc_);
-  this->RCLCPP_INFO(this->get_logger(), "pp max_vel: %f", pp.max_vel_);
-  this->RCLCPP_INFO(this->get_logger(), "pp max_acc: %f", pp.max_acc_);
+  RCLCPP_INFO(this->get_logger(), "pp max_vel: %f", pp.max_vel_);
+  RCLCPP_INFO(this->get_logger(), "pp max_acc: %f", pp.max_acc_);
   this->get_parameter("manager.max_jerk", pp.max_jerk_);
   this->get_parameter("manager.dynamic_environment", pp.dynamic_);
   this->get_parameter("manager.clearance_threshold", pp.clearance_);
@@ -317,8 +317,8 @@ void KinoReplanFSM::init() {
 
   this->get_parameter("max_vel", kap.max_vel);
   this->get_parameter("max_acc", kap.max_acc);
-  this->RCLCPP_INFO(this->get_logger(), "kap max_vel: %f", kap.max_vel);
-  this->RCLCPP_INFO(this->get_logger(), "kap max_acc: %f", kap.max_acc);
+  RCLCPP_INFO(this->get_logger(), "kap max_vel: %f", kap.max_vel);
+  RCLCPP_INFO(this->get_logger(), "kap max_acc: %f", kap.max_acc);
   this->get_parameter("search.max_tau", kap.max_tau);
   this->get_parameter("search.init_max_tau", kap.init_max_tau);
   this->get_parameter("search.w_time", kap.w_time);
