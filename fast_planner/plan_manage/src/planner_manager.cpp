@@ -119,7 +119,7 @@ bool FastPlannerManager::checkTrajCollision(double& distance) {
 
 bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel,
                                            Eigen::Vector3d start_acc, Eigen::Vector3d end_pt,
-                                           Eigen::Vector3d end_vel) {
+                                           Eigen::Vector3d end_vel, rclcpp::Time start_time) {
 
   std::cout << "[kino replan]: -----------------------" << std::endl;
   cout << "start: " << start_pt.transpose() << ", " << start_vel.transpose() << ", "
@@ -130,11 +130,10 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
     cout << "Close goal" << endl;
     return false;
   }
-  // ros::Time t1;
-  rclcpp::Time t1;
 
+  rclcpp::Time t1;
   // local_data_.start_time_ = ros::Time::now();
-  local_data_.start_time_ = rclcpp::Clock().now();
+  local_data_.start_time_ = start_time; //rclcpp::Clock().now();
   double t_search = 0.0, t_opt = 0.0, t_adjust = 0.0;
 
   Eigen::Vector3d init_pos = start_pt;

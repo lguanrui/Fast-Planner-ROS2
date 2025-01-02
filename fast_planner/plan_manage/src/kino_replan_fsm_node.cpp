@@ -832,7 +832,7 @@ void KinoReplanFSM::visGoal(const Eigen::Vector3d& goal, double resolution, cons
 
 bool KinoReplanFSM::callKinodynamicReplan() {
   bool plan_success =
-      planner_manager_->kinodynamicReplan(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_);
+      planner_manager_->kinodynamicReplan(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_, this->now());
 
   if (plan_success) {
 

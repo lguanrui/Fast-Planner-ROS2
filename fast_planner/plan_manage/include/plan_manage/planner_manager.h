@@ -26,6 +26,8 @@
 #ifndef _PLANNER_MANAGER_H_
 #define _PLANNER_MANAGER_H_
 
+#include <rclcpp/rclcpp.hpp>
+
 #include <bspline_opt/bspline_optimizer.h>
 #include <bspline/non_uniform_bspline.h>
 
@@ -50,7 +52,7 @@ public:
 
   /* main planning interface */
   bool kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
-                         Eigen::Vector3d end_pt, Eigen::Vector3d end_vel);
+                         Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, rclcpp::Time start_time);
   bool planGlobalTraj(const Eigen::Vector3d& start_pos);
   bool topoReplan(bool collide);
 
