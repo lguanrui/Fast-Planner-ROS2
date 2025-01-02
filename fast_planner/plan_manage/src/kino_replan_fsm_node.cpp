@@ -601,9 +601,9 @@ void KinoReplanFSM::execFSMCallback() {
 
       bool success = callKinodynamicReplan();
       if (success) {
-        cout << "[FSM]: the Kinodynamic replan is successful" << endl;
+        //cout << "[FSM]: the Kinodynamic replan is successful" << endl;
         changeFSMExecState(EXEC_TRAJ, "FSM");
-        cout << "[FSM]: the state is now EXEC_TRAJ" << endl;
+        //cout << "[FSM]: the state is now EXEC_TRAJ" << endl;
       } else {
         // have_target_ = false;
         // changeFSMExecState(WAIT_TARGET, "FSM");
@@ -615,12 +615,12 @@ void KinoReplanFSM::execFSMCallback() {
     case EXEC_TRAJ: {
       /* determine if need to replan */
       LocalTrajData* info     = &planner_manager_->local_data_;
-      cout << "[FSM]: I'm in the EXEC_TRAJ state" << endl;
+      //cout << "[FSM]: I'm in the EXEC_TRAJ state" << endl;
       // ros::Time      time_now = ros::Time::now();
       rclcpp::Time curr_time = this->now();
       double         t_cur    = (curr_time - info->start_time_).seconds();
       t_cur                   = std::min(info->duration_, t_cur);
-      cout << "[FSM]: t_cur: " << t_cur << endl;
+      //cout << "[FSM]: t_cur: " << t_cur << endl;
 
       Eigen::Vector3d pos = info->position_traj_.evaluateDeBoorT(t_cur);
 
@@ -647,10 +647,10 @@ void KinoReplanFSM::execFSMCallback() {
     case REPLAN_TRAJ: {
       LocalTrajData* info     = &planner_manager_->local_data_;
       // ros::Time      time_now = ros::Time::now();
-      cout << "[FSM]: I'm in the REPLAN_TRAJ state" << endl;
+      //cout << "[FSM]: I'm in the REPLAN_TRAJ state" << endl;
       rclcpp::Time curr_time = this->now();
       double         t_cur    = (curr_time - info->start_time_).seconds();
-      cout << "[FSM]: REPLAN_TRAJ t_cur: " << t_cur << endl;
+      //cout << "[FSM]: REPLAN_TRAJ t_cur: " << t_cur << endl;
 
       start_pt_  = info->position_traj_.evaluateDeBoorT(t_cur);
       start_vel_ = info->velocity_traj_.evaluateDeBoorT(t_cur);
