@@ -601,7 +601,9 @@ void KinoReplanFSM::execFSMCallback() {
 
       bool success = callKinodynamicReplan();
       if (success) {
+        cout << "[FSM]: the Kinodynamic replan is successful" << endl;
         changeFSMExecState(EXEC_TRAJ, "FSM");
+        cout << "[FSM]: the state is now EXEC_TRAJ" << endl;
       } else {
         // have_target_ = false;
         // changeFSMExecState(WAIT_TARGET, "FSM");
