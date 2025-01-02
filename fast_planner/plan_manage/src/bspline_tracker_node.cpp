@@ -220,6 +220,7 @@ void BsplineTrackerNode::bsplineCallback(const fast_planner_msgs::msg::Bspline::
     yaw_pts(i, 0) = msg->yaw_pts[i];
   }
 
+  cout << "BsplineTrackerNode: yaw_pts.size(): " << yaw_pts.size() << endl;
   NonUniformBspline yaw_traj(yaw_pts, msg->order, msg->yaw_dt);
 
   start_time_ = msg->start_time;
