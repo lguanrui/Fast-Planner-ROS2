@@ -618,7 +618,9 @@ void KinoReplanFSM::execFSMCallback() {
       // ros::Time      time_now = ros::Time::now();
       rclcpp::Time curr_time = this->now();
       double         t_cur    = (curr_time - info->start_time_).seconds();
+      cout << "[FSM]: I'm in the EXEC_TRAJ state" << endl;
       t_cur                   = std::min(info->duration_, t_cur);
+      cout << "[FSM]: t_cur: " << t_cur << endl;
 
       Eigen::Vector3d pos = info->position_traj_.evaluateDeBoorT(t_cur);
 
