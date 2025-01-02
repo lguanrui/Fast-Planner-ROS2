@@ -84,10 +84,10 @@ void FastPlannerManager::setGlobalWaypoints(vector<Eigen::Vector3d>& waypoints) 
   plan_data_.global_waypoints_ = waypoints;
 }
 
-bool FastPlannerManager::checkTrajCollision(double& distance) {
+bool FastPlannerManager::checkTrajCollision(double& distance, rclcpp::Time curr_time) {
 
   // double t_now = (ros::Time::now() - local_data_.start_time_).toSec();
-  double t_now = (rclcpp::Clock().now() - local_data_.start_time_).seconds();
+  double t_now = (curr_time - local_data_.start_time_).seconds();
 
   double tm, tmp;
   local_data_.position_traj_.getTimeSpan(tm, tmp);

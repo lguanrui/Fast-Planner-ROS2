@@ -66,7 +66,7 @@ public:
   void setGlobalWaypoints(vector<Eigen::Vector3d>& waypoints);
   void setSDFPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
 
-  bool checkTrajCollision(double& distance);
+  bool checkTrajCollision(double& distance, rclcpp::Time curr_time);
 
   PlanParameters pp_;
   LocalTrajData local_data_;

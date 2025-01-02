@@ -743,7 +743,7 @@ void KinoReplanFSM::checkCollisionCallback() {
   /* ---------- check trajectory ---------- */
   if (exec_state_ == FSM_EXEC_STATE::EXEC_TRAJ) {
     double dist;
-    bool   safe = planner_manager_->checkTrajCollision(dist);
+    bool   safe = planner_manager_->checkTrajCollision(dist, this->now());
 
     if (!safe) {
       // cout << "current traj in collision." << endl;
