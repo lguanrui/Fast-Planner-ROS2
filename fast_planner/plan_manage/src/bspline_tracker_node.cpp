@@ -236,11 +236,14 @@ void BsplineTrackerNode::bsplineCallback(const fast_planner_msgs::msg::Bspline::
 
   receive_traj_ = true;
 }
+
 void BsplineTrackerNode::replanCallback(const std_msgs::msg::Empty::SharedPtr msg) {
   // reset duration
   const double time_out = 0.01;
+  cout << "BsplineTrackerNode: replanCallback" << endl;
   auto time_now = this->now();
   double t_stop = (time_now - start_time_).seconds() + time_out;
+  cout << "BsplinTrackerNode: t_stop: " << t_stop << endl;
   traj_duration_ = std::min(t_stop, traj_duration_);
 }
 
