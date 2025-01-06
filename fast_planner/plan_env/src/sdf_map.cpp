@@ -1238,19 +1238,25 @@ void SDFMap::getSurroundPts(const Eigen::Vector3d& pos, Eigen::Vector3d pts[2][2
 //                               const nav_msgs::OdometryConstPtr& odom) {
 void SDFMap::depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr img, const nav_msgs::msg::Odometry::ConstSharedPtr odom){
   /* get pose */
-  md_.camera_pos_(0) = odom->pose.pose.position.x;
-  md_.camera_pos_(1) = odom->pose.pose.position.y;
-  md_.camera_pos_(2) = odom->pose.pose.position.z;
-
   Eigen::Quaterniond robot_q_ = Eigen::Quaterniond(odom->pose.pose.orientation.w, odom->pose.pose.orientation.x,
                                 odom->pose.pose.orientation.y, odom->pose.pose.orientation.z);
 
   Eigen::Matrix3d robot_R = robot_q_.toRotationMatrix();
-  Eigen::Matrix3d camera_body_r << 0, -1, 0, 0, 0, 1, 1, 0, 0;
+  Eigen::Matrix3d camera_body_r;
+  camera_body_r  << 0, 0, 1, -1, 0, 0, 0, 1, 0;
   cout << "camera_body_r: " << camera_body_r << endl;
   Eigen::Matrix3d camera_R = camera_body_r * robot_R;
   md_.camera_q_ = Eigen::Quaternion<double>(camera_R);//Eigen::Quaterniond(odom->pose.pose.orientation.w, odom->pose.pose.orientation.x,
                   //                   odom->pose.pose.orientation.y, odom->pose.pose.orientation.z);
+
+  md_.camera_pos_(0) = odom->pose.pose.position.x;
+  md_.camera_pos_(1) = odom->pose.pose.position.y;
+  md_.camera_pos_(2) = odom->pose.pose.position.z;
+  
+  Eigen::Vector3d camera_body_vec;
+  camera_body_vec << 0.05, 0.0, -0.05;
+
+  md_.camera_pos_ = md_.camera_pos_ + camera_R * camera_body_vec;
 
   /* get depth image */
   cv_bridge::CvImagePtr cv_ptr;

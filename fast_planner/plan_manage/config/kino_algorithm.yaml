@@ -28,23 +28,23 @@ sdf_map:
   local_bound_inflate: 0.0
   local_map_margin: 50
   ground_height: -1.0
-  cx: 321.04638671875
+  cx: 504.9070385123329
   cy: 243.44969177246094
-  fx: 387.229248046875
-  fy: 387.229248046875
+  fx: 631.0084746290834 
+  fy: 636.5226676728539
   use_depth_filter: true
   depth_filter_tolerance: 0.15
   depth_filter_maxdist: 5.0
   depth_filter_mindist: 0.2
   depth_filter_margin: 2
-  k_depth_scaling_factor: 1000.0
+  k_depth_scaling_factor: 100.0
   skip_pixel: 2
   p_hit: 0.65
   p_miss: 0.35
   p_min: 0.12
   p_max: 0.90
   p_occ: 0.80
-  min_ray_length: 0.5
+  min_ray_length: 0.1
   max_ray_length: 4.5
   esdf_slice_height: 0.3
   visualization_truncate_height: 2.49
