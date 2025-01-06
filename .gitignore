@@ -1,4 +1,5 @@
 fast_planner/.vscode
 .vscode/
 nlopt/
-.swp
+*.swp
+__pycache__/
