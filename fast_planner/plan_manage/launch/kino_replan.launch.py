@@ -25,8 +25,8 @@ def generate_launch_description():
     mav_name = LaunchConfiguration('name')
     platform_type = LaunchConfiguration('platform_type')
 
-    map_frame = [TextSubstitution(text='/world')]
-    sensor_frame = [TextSubstitution(text='/base_link')]
+    map_frame = [TextSubstitution(text='world')]
+    sensor_frame = [TextSubstitution(text='base_link')]
     odom_topic_name = [TextSubstitution(text='/'),mav_name, TextSubstitution(text='/odom')]
     depth_topic_name = [TextSubstitution(text='/'),mav_name, TextSubstitution(text='/camera/depth/image_raw')] # RS Depth Topic
     camera_info_topic_name = [TextSubstitution(text='/'),mav_name, TextSubstitution(text='/camera/camera_info')]
