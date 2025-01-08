@@ -25,8 +25,8 @@ def generate_launch_description():
     mav_name = LaunchConfiguration('name')
     platform_type = LaunchConfiguration('platform_type')
 
-    map_frame = '/world' #[mav_name, TextSubstitution(text='/world')]
-    sensor_frame = '/base_link'#[mav_name, TextSubstitution(text='/base_link')]
+    map_frame = [TextSubstitution(text='/world')]
+    sensor_frame = [TextSubstitution(text='/base_link')]
     odom_topic_name = [TextSubstitution(text='/'),mav_name, TextSubstitution(text='/odom')]
     depth_topic_name = [TextSubstitution(text='/'),mav_name, TextSubstitution(text='/camera/depth/image_raw')] # RS Depth Topic
     camera_info_topic_name = [TextSubstitution(text='/'),mav_name, TextSubstitution(text='/camera/camera_info')]
@@ -79,8 +79,8 @@ def generate_launch_description():
     	('depth/camera_info',camera_info_topic_name)],
     	parameters=[
                     nvblox_base_config,
-                    {'global_frame': 'world'},
-                    {'pose_frame': 'base_link'},
+                    {'global_frame': map_frame},
+                    {'pose_frame': sensor_frame},
                     {'odom_frame': odom_topic_name},
                     {'use_tf_transforms': True},
                     {'use_topic_transforms': False},
