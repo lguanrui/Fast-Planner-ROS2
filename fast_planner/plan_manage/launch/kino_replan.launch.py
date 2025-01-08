@@ -55,8 +55,8 @@ def generate_launch_description():
         name='kino_replan_fsm',
         parameters=[local_planner_config],
         extra_arguments=[{'use_intra_process_comms': True}],
-        remappings=[("depth","camera/depth/image_raw"),
-                   ("sync_depth_odom","odom")],
+        #remappings=[("depth",depth_topic_name),
+        #           ("sync_depth_odom",odom_topic_name)],
     )
 
     bspline_tracker_node = ComposableNode(
