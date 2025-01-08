@@ -55,8 +55,8 @@ def generate_launch_description():
         name='kino_replan_fsm',
         parameters=[local_planner_config],
         extra_arguments=[{'use_intra_process_comms': True}],
-        #remappings=[("depth",depth_topic_name),
-        #           ("sync_depth_odom",odom_topic_name)],
+        remappings=[("cloud","nvblox_node/static_occupancy")],
+                   #("sync_depth_odom",odom_topic_name)],
     )
 
     bspline_tracker_node = ComposableNode(
