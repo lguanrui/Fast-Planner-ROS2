@@ -1243,9 +1243,9 @@ void SDFMap::depthOdomCallback(const sensor_msgs::msg::Image::ConstSharedPtr img
 
   Eigen::Matrix3d robot_R = robot_q_.toRotationMatrix();
   Eigen::Matrix3d camera_body_r;
-  camera_body_r  << 0, 0, 1, -1, 0, 0, 0, 1, 0;
+  camera_body_r  << 0, 0, 1, -1, 0, 0, 0, -1, 0;
   //cout << "camera_body_r: " << camera_body_r << endl;
-  Eigen::Matrix3d camera_R = camera_body_r * robot_R;
+  Eigen::Matrix3d camera_R = robot_R * camera_body_r;
   md_.camera_q_ = Eigen::Quaternion<double>(camera_R);//Eigen::Quaterniond(odom->pose.pose.orientation.w, odom->pose.pose.orientation.x,
                   //                   odom->pose.pose.orientation.y, odom->pose.pose.orientation.z);
 
