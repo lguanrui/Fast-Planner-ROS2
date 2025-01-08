@@ -27,11 +27,11 @@ sdf_map:
   obstacles_inflation: 0.099
   local_bound_inflate: 0.0
   local_map_margin: 50
-  ground_height: -1.0
-  cx: 504.9070385123329
-  cy: 243.44969177246094
-  fx: 631.0084746290834 
-  fy: 636.5226676728539
+  ground_height: 0.0 # -1.0
+  cx: 320.5
+  cy: 240.5
+  fx: 420.5028492444282 
+  fy: 420.5028492444282
   use_depth_filter: true
   depth_filter_tolerance: 0.15
   depth_filter_maxdist: 5.0
