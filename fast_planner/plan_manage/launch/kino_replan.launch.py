@@ -79,8 +79,8 @@ def generate_launch_description():
     	('depth/camera_info',camera_info_topic_name)],
     	parameters=[
                     nvblox_base_config,
-                    {'global_frame': map_frame},
-                    {'pose_frame': sensor_frame},
+                    {'global_frame': 'world'},
+                    {'pose_frame': 'base_link'},
                     {'odom_frame': odom_topic_name},
                     {'use_tf_transforms': True},
                     {'use_topic_transforms': False},
