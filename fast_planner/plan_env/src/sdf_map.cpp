@@ -807,6 +807,8 @@ void SDFMap::odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom) {
 
 void SDFMap::cloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr img) {
 
+  if (img->fields.empty()) return;
+
   pcl::PointCloud<pcl::PointXYZ> latest_cloud;
   pcl::fromROSMsg(*img, latest_cloud);
 
